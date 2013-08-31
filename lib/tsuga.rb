@@ -1,5 +1,3 @@
-require "tsuga/version"
+module Tsuga ; end
 
-module Tsuga
-  # Your code goes here...
-end
+require "tsuga/version"
