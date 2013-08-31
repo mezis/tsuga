@@ -47,6 +47,28 @@ describe Tsuga::Model::Point do
       subject.lat.should be_within(1e-6).of(0)
       subject.lng.should be_within(1e-6).of(0)
     end
+  end
 
+  describe '(comparison)' do
+    it 'preserves lat-order' do
+      described_class.new.set_coords(45, 2).should <
+      described_class.new.set_coords(46, 2)
+    end
+
+    it 'preserves lng-order' do
+      described_class.new.set_coords(45, 2).should <
+      described_class.new.set_coords(45, 3)
+    end
+
+    it 'preserves order around greenwich' do
+      described_class.new.set_coords(45, -1).should <
+      described_class.new.set_coords(45,  1)
+    end
+
+    it 'preserves order around equator' do
+      described_class.new.set_coords(-1, 2).should <
+      described_class.new.set_coords( 1, 2)
+    end
   end
 end
+
