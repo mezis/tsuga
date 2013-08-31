@@ -27,7 +27,8 @@ describe Tsuga::Model::Tile do
       end
 
       it 'calculates southeast' do
-        result.southeast.should > point
+        result.southeast.lng.should be_within(1e-6).of(360.0 * (2 ** -18))
+        result.southeast.lat.should be_within(1e-6).of(180.0 * (2 ** -18))
       end
 
     end

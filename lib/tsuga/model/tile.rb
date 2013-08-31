@@ -20,8 +20,11 @@ module Tsuga::Model
       # - :depth
       def including(point, options={})
         depth = options[:depth]
-        lo_mask = ((1<<depth) - 1) << (64-depth) # mask for high bits
-        hi_mask = ((1<<(64-depth)) - 1)          # mask for low bits
+        raise ArgumentError, 'bad depth' unless (1..31).include?(depth)
+
+        bits  = 2 * depth
+        lo_mask = ((1<<bits) - 1) << (64-bits) # mask for high bits
+        hi_mask = ((1<<(64-bits)) - 1)         # mask for low bits
 
         new.tap do |t|
           t.depth = depth
