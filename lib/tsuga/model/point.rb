@@ -16,6 +16,17 @@ module Tsuga::Model
       geohash <=> other.geohash
     end
 
+
+    def distance_to(other)
+      Math.sqrt((self.lat - other.lat) ** 2 + (self.lng - other.lng) ** 2)
+    end
+
+
+    def &(other)
+      distance_to(other)
+    end
+
+
     def geohash=(value)
       @_latlng = nil
       super

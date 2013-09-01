@@ -8,6 +8,24 @@ describe Tsuga::Model::Point do
 
   # subject { TestPoint.new }
 
+  describe '#distance_to' do
+    let(:p00) { described_class.new.set_coords(0,0) }
+    let(:p01) { described_class.new.set_coords(0,1) }
+    let(:p11) { described_class.new.set_coords(1,1) }
+
+    it 'is zero for the same point' do
+      p00.distance_to(p00).should be_within(1e-6).of(0)
+    end
+
+    it 'is 1 for points 1 degree apart' do
+      p00.distance_to(p01).should be_within(1e-6).of(1)
+    end
+
+    it 'uses euclidian distance' do
+      p00.distance_to(p11).should be_within(1e-6).of(Math.sqrt(2))
+    end
+  end
+
   describe '#set_coords' do
     let(:result) { "%064b" % subject.geohash }
 
