@@ -31,6 +31,18 @@ describe Tsuga::Adapter::Memory::Base do
     end
   end
 
+  describe '#destroy' do
+    it 'removes records' do
+      id = stuff.persist!.id
+      stuff.destroy
+      expect { stuff_class.find(id) }.to raise_error
+    end
+
+    it 'clears record id' do
+      stuff.persist!.destroy.id.should be_nil
+    end
+  end
+
   describe '.find' do
     it 'retrives record by ID' do
       stuff.persist!

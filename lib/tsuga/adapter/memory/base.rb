@@ -3,6 +3,8 @@ require 'tsuga/errors'
 require 'tsuga/adapter'
 
 module Tsuga::Adapter::Memory
+  # A memory-backed activerecord pattern implementation.
+  # Makes my test fly like crazy.
   module Base
 
     def self.included(by)
@@ -13,17 +15,24 @@ module Tsuga::Adapter::Memory
 
     def initialize(*args)
       super(*args)
-      @id = self.class.generate_id
     end
 
 
     def persist!
+      @id ||= self.class.generate_id
       self.class._records[id] = self.clone
+      self
+    end
+
+    def destroy
+      self.class._records.delete(id)
+      @id = nil
       self
     end
 
 
     module ClassMethods
+      # FIXME: not thread safe. not sure we care, either.
       def generate_id
         @_last_id ||= 0
         @_last_id += 1
