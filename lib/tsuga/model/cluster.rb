@@ -7,8 +7,7 @@ module Tsuga::Model
   # - :children_type (Record or Cluster)
   # - :children_ids
   # - :weight (count of Record in subtree)
-  # - :sum_lat
-  # - :sum_lng
+  # - :sum_lat, :sum_lng
   # 
   # Respond to class methods:
   # - :in_tile(Tile) (scopish, response responds to :find_each)
@@ -32,6 +31,20 @@ module Tsuga::Model
         cluster._inherit_fields_from(other)
       end
     end
+
+    def merge(other)
+      raise ArgumentError, 'not same depth'  unless depth == other.depth
+      raise ArgumentError, 'not same parent' unless parent_id == other.parent_id
+
+      self.weight  += other.weight
+      self.sum_lat += other.sum_lat
+      self.sum_lng += other.sum_lng
+      set_coords(sum_lat/weight, sum_lng/weight)
+      self.children_ids += other.children_ids
+    end
+
+
+    private
 
     # other is either a Cluster or a Record
     def _inherit_fields_from(other)
