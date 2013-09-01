@@ -3,9 +3,6 @@ require 'tsuga/model/point'
 require 'tsuga/model/tile'
 
 describe Tsuga::Model::Tile do
-  # class TestPoint < Struct.new(:lat, :lng, :geohash)
-  #   include Tsuga::Model::Point
-  # end
 
   describe '.including' do
     let(:depth)  { OpenStruct.new :value => 1 }
@@ -32,6 +29,58 @@ describe Tsuga::Model::Tile do
       end
 
     end
+  end
+
+  describe '#contains?' do
+    let(:point)  { Tsuga::Model::Point.new }
+
+    subject do
+      described_class.including(
+        Tsuga::Model::Point.new.set_coords(0,0), :depth => 2)
+    end
+
+    let(:result) { subject.contains?(point) }
+
+    it 'includes the northwest corner' do
+      point.set_coords(0,0)
+      result.should be_true
+    end
+
+    it 'excludes the southeast corner' do
+      point.set_coords(45,90)
+      result.should be_false
+    end
+
+    it 'includes point close to the southeast corner' do
+      point.set_coords(45 - 1e-6, 90 - 1e-6)
+      result.should be_true
+    end
+
+    it 'includes the center point' do
+      point.set_coords(22.5, 45)
+      result.should be_true
+    end
+
+    it 'excludes points north of the border' do
+      point.set_coords(-1, 45)
+      result.should be_false
+    end
+
+    it 'excludes points south of the border' do
+      point.set_coords(48, 45)
+      result.should be_false
+    end
+
+    it 'excludes points west of the border' do
+      point.set_coords(22.5, -1)
+      result.should be_false
+    end
+
+    it 'excludes points east of the border' do
+      point.set_coords(22.5, 91)
+      result.should be_false
+    end
+
   end
 
 end

@@ -9,6 +9,10 @@ module Tsuga::Model
     # in the geohash.
     attr_accessor :depth
 
+    def contains?(point)
+      (point.geohash >= northwest.geohash) && (point.geohash <= southeast.geohash)
+    end
+
     def neighbours
       raise NotImplementedError
     end
