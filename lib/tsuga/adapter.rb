@@ -1,0 +1,1 @@
+module Tsuga::Adapter ; end
