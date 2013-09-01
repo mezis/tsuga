@@ -3,10 +3,8 @@ require 'tsuga/service/aggregator'
 require 'tsuga/adapter/memory_adapter'
 
 describe Tsuga::Service::Aggregator do
-  subject { described_class.new(clusters) }
 
   def new_cluster(depth, lat, lng)
-    # require 'pry' ; require 'pry-nav' ; binding.pry
     Tsuga::Adapter::MemoryAdapter.clusters.new.tap do |cluster|
       cluster.depth = depth
       cluster.set_coords(lat,lng)
@@ -17,6 +15,16 @@ describe Tsuga::Service::Aggregator do
       cluster.persist!
     end
   end
+
+  def all_clusters
+    [].tap do |result|
+      Tsuga::Adapter::MemoryAdapter.clusters.find_each { |c| result << c }
+    end
+  end
+
+  subject { described_class.new(clusters) }
+
+  before { Tsuga::Adapter::MemoryAdapter.clusters.delete_all }
 
   describe '#min_distance' do
     let(:clusters) { [new_cluster(2,0,0)] }
@@ -49,8 +57,73 @@ describe Tsuga::Service::Aggregator do
         new_cluster(2, south, east),
         new_cluster(2, north, east)
       ]}
+      
+      it('passes') { subject.run }
+
+      it('preserves clusers') do 
+        subject.run
+        all_clusters.length.should == 4
+      end
+    end
+
+
+    context 'with 3 close clusters' do
+      let(:lat) { 22.5 }
+      let(:lng) { 45 }
+
+      let(:clusters) {[
+        new_cluster(2, lat + 0, lng),
+        new_cluster(2, lat + 1, lng),
+        new_cluster(2, lat - 1, lng)
+      ]}
+      
+      it('passes') { subject.run }
+
+      it 'groups clusters' do 
+        subject.run
+        all_clusters.length.should == 1
+      end
+
+      it 'computes centroid' do
+        subject.run
+        all_clusters.first.tap do |cluster|
+          cluster.lat.should == lat
+          cluster.lng.should == lng
+        end
+      end
+    end
+
+
+    context 'with 2 close and 2 distant clusters' do
+      let(:lat) { 22.5 }
+      let(:lng) { 45 }
+
+      let(:clusters) {[
+        new_cluster(2, 22, 45),
+        new_cluster(2, 23, 46),
+        new_cluster(2,  0,  0),
+        new_cluster(2,  1,  1)
+      ]}
+      
+      it('passes') { subject.run }
+
+      it 'groups clusters' do 
+        subject.run
+        all_clusters.length.should == 2
+      end
+    end
+
+    context 'with random clusters' do
+      let(:lat_max) { 45 - 1e-4 }
+      let(:lng_max) { 90 - 1e-4 }
+
+      let(:clusters) { 
+        (1...20).map { new_cluster(2, rand*lat_max, rand*lng_max) }
+      }
+      
       it('passes') { subject.run }
     end
+
   end
 
 end

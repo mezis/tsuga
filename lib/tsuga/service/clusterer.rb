@@ -1,4 +1,5 @@
 require 'tsuga/model/tile'
+require 'tsuga/service/aggregator'
 
 module Tsuga::Service
   class Clusterer
@@ -50,13 +51,13 @@ module Tsuga::Service
           # create a cluster of level N pointing to the deeper cluster
           _create_clusters(depth, tile)
           # run clustering in tile
-          _assemble_clusters(depth, tile)
+          _assemble_clusters(tile)
         end
 
         # for each tile T
         _walk_tiles_at(depth) do |tile|
           # run clustering with this tile's and the neighbouringh tiles's clusters
-          _assemble_clusters(depth, tile.neighbours)          
+          # _assemble_clusters(*tile.neighbours)
         end
     end
 
@@ -90,6 +91,11 @@ module Tsuga::Service
       end
     end
 
+    def _assemble_clusters(*tiles)
+      clusters = Set.new
+      _adapter.clusters.in_tile(*tiles).find_each { |c| clusters << c }
+      Aggregator.new(clusters).run
+    end
 
   end
 end
