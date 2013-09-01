@@ -3,6 +3,7 @@ require 'tsuga/model/point'
 require 'tsuga/model/tile'
 
 module Tsuga::Service
+
   # Aggregates clusters together until no two clusters are closer than
   # a given minimum distance.
   class Aggregator
@@ -12,7 +13,7 @@ module Tsuga::Service
 
     def run
       # build the set of pairs (n²/2)
-      pairs = SortedSet.new
+      pairs  = []
       source = _clusters.dup
       while left = source.pop
         source.each do |right| 
@@ -23,9 +24,12 @@ module Tsuga::Service
       # pop & merge
       to_delete  = []
       to_persist = Set.new
-      while pairs.any? && pairs.first.distance < min_distance
+      while pairs.any?
+        best_pair = pairs.min
+        break if best_pair.distance > min_distance
+
         # remove the closest pair
-        left, right = pairs.pop.values
+        left, right = best_pair.values
 
         # remove pairs containing one of the items
         pairs.delete_if { |p| p.has?(left) || p.has?(right) }
@@ -72,17 +76,17 @@ module Tsuga::Service
     # model a pair of clusters such as [a,b] == [b,a]
     # and comparison is based on distance
     class Pair
+      include Comparable
+      attr_reader :distance
+
       def initialize(c1, c2)
         @left  = c1
         @right = c2
+        @distance = (@left & @right)
       end
 
       def <=>(other)
         self.distance <=> other.distance
-      end
-
-      def distance
-        @distance ||= (@left & @right)
       end
 
       def values

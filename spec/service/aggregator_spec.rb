@@ -113,12 +113,12 @@ describe Tsuga::Service::Aggregator do
       end
     end
 
-    context 'with random clusters' do
+    context 'with 100 random clusters' do
       let(:lat_max) { 45 - 1e-4 }
       let(:lng_max) { 90 - 1e-4 }
 
       let(:clusters) { 
-        (1...20).map { new_cluster(2, rand*lat_max, rand*lng_max) }
+        (1...100).map { new_cluster(2, rand*lat_max, rand*lng_max) }
       }
       
       it('passes') { subject.run }
