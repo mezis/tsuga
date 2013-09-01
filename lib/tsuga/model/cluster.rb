@@ -1,3 +1,5 @@
+require 'tsuga/model/point'
+
 module Tsuga::Model
   # Concretions (provided by adapters) have the following accessors:
   # - :depth
@@ -16,19 +18,24 @@ module Tsuga::Model
   # 
   # Respond to the following instance methods:
   # - :destroy
-  class Cluster
+  module Cluster
     include Tsuga::Model::PointTrait
 
-    def initialize(depth, other)
-      self.depth = depth
-      inherit_fields_from(other)
+    def initialize
+      self.depth   ||= 1
+      self.geohash ||= 0xC000000000000000 # equator/greenwich
+    end
+
+    def self.build_from(depth, other)
+      new.tap do |cluster|
+        cluster.depth = depth
+        cluster._inherit_fields_from(other)
+      end
     end
 
     # other is either a Cluster or a Record
-    def inherit_fields_from(other)
+    def _inherit_fields_from(other)
       self.geohash       = other.geohash
-      self.lat           = other.lat
-      self.lng           = other.lng
       self.children_ids  = [other.id]
       self.children_type = other.class.name
 
@@ -37,10 +44,12 @@ module Tsuga::Model
         self.weight      = 1
         self.sum_lng     = other.lng
         self.sum_lat     = other.lat
-      else
+      when Cluster
         self.weight      = other.weight
         self.sum_lng     = other.sum_lng
         self.sum_lat     = other.sum_lat
+      else
+        raise ArgumentError
       end
     end
   end
