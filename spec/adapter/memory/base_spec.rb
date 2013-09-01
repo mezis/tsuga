@@ -94,9 +94,6 @@ describe Tsuga::Adapter::Memory::Base do
       stuff2 = stuff_class.new.persist! # id 2
     end
 
-    describe '.scoped' do
-    end
-
     describe '#find' do
       it 'finds selected items' do
         expect { subject.find(2) }.not_to raise_error
@@ -129,6 +126,30 @@ describe Tsuga::Adapter::Memory::Base do
       it 'returns selected ids' do
         subject.collect_ids.to_a.should == [2]
       end
+    end
+  end
+
+  describe 'defining named scopes' do
+    before do
+      stuff_class.class_eval do
+        def self.id_multiple_of(n)
+          scoped(lambda { |r| r.id % n == 0 })
+        end
+      end
+
+      10.times { stuff_class.new.persist! }
+    end
+
+    it 'works' do
+      expect { |b|
+        stuff_class.id_multiple_of(3).find_each(&b)
+      }.to yield_control.exactly(3).times
+    end
+
+    it 'is chainable' do
+      expect { |b|
+        stuff_class.id_multiple_of(3).id_multiple_of(2).find_each(&b)
+      }.to yield_control.exactly(1).times
     end
   end
 end

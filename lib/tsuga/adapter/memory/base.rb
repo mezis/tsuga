@@ -34,7 +34,7 @@ module Tsuga::Adapter::Memory
       end
 
       def scoped(*filters)
-        Scope.new(self, *filters)
+        Scope.new(self, filters)
       end
 
       def delete_all
@@ -59,7 +59,7 @@ module Tsuga::Adapter::Memory
       attr_reader :_filters
       attr_reader :_origin
 
-      def initialize(origin, *filters)
+      def initialize(origin, filters)
         @_origin  = origin
         @_filters = filters
       end
@@ -99,7 +99,7 @@ module Tsuga::Adapter::Memory
 
       def method_missing(method, *args)
         result = _origin.send(method, *args)
-        result = scoped(*result._filters) if result.kind_of?(Scope)
+        result = scoped(*(result._filters)) if result.kind_of?(Scope)
       end
 
       def respond_to?(method, include_private=false)
@@ -109,7 +109,7 @@ module Tsuga::Adapter::Memory
       private 
 
       def _matches?(record)
-        _filters.any? { |f| f.call(record) }
+        _filters.all? { |f| f.call(record) }
       end
     end # Scope
 
