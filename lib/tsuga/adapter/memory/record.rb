@@ -9,5 +9,9 @@ module Tsuga::Adapter::Memory
     include Fields
     include Base
     include Tsuga::Model::Record
+
+    def self.in_tile(tile)
+      scoped(lambda { |r| tile.contains?(r) })
+    end
   end
 end

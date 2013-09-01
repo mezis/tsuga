@@ -11,5 +11,13 @@ module Tsuga::Adapter::Memory
     include Base
     include Tsuga::Model::Cluster
 
+
+    def self.at_depth(depth)
+      scoped(lambda { |record| record.depth == depth })
+    end
+
+    def self.in_tile(*tiles)
+      scoped(lambda { |r| tiles.any? { |t| t.contains?(r) } })
+    end
   end
 end
