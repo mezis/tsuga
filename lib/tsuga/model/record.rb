@@ -1,3 +1,5 @@
+require 'tsuga/model/point'
+
 module Tsuga::Model
   # Concretions have the following accessors:
   # (same as Point)
@@ -6,7 +8,7 @@ module Tsuga::Model
   # - :find(id)
   # - :collect_ids (returns a Set)
   # 
-  class Record
+  module Record
     include Tsuga::Model::PointTrait
 
     def update_geohash
