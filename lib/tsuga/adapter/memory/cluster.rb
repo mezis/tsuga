@@ -4,7 +4,8 @@ require 'tsuga/adapter/memory/base'
 module Tsuga::Adapter::Memory
   class Cluster
     module Fields
-      attr_accessor :geohash, :lat, :lng, :depth, :parent_id, :children_ids
+      attr_accessor :geohash, :lat, :lng, :depth, :parent_id
+      attr_accessor :children_type, :children_ids
       attr_accessor :sum_lat, :sum_lng, :weight
     end
     include Fields
@@ -13,7 +14,7 @@ module Tsuga::Adapter::Memory
 
 
     def self.at_depth(depth)
-      scoped(lambda { |record| record.depth == depth })
+      scoped(lambda { |r| r.depth == depth })
     end
 
     def self.in_tile(*tiles)
