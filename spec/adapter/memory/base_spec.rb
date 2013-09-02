@@ -70,6 +70,13 @@ describe Tsuga::Adapter::Memory::Base do
       id2 = stuff_class.new.persist!.id
       expect { |b| stuff_class.find_each(&b) }.to yield_control.twice
     end
+
+    it 'allows writes while iterating' do
+      stuff_class.new.persist!
+      expect {
+        stuff_class.find_each { |r| stuff_class.new.persist! }
+      }.not_to raise_error
+    end
   end
 
   describe '.delete_all' do

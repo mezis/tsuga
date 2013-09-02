@@ -51,7 +51,7 @@ module Tsuga::Adapter::Memory
       end
 
       def find_each
-        _records.each_value { |r| yield r.clone }
+        _records.dup.each_value { |r| yield r.clone }
       end
 
       def collect_ids
@@ -91,7 +91,7 @@ module Tsuga::Adapter::Memory
       end
 
       def find_each
-        _origin._records.each_value do |record| 
+        _origin._records.dup.each_value do |record| 
           next unless _matches?(record)
           yield record.clone
         end
