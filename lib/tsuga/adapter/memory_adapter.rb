@@ -6,11 +6,11 @@ module Tsuga::Adapter
   class MemoryAdapter < Base
     RecordNotFound = Class.new(RuntimeError)
 
-    def self.records
+    def records
       Tsuga::Adapter::Memory::Record
     end
 
-    def self.clusters
+    def clusters
       Tsuga::Adapter::Memory::Cluster
     end
   end

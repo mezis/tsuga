@@ -7,6 +7,9 @@ module Tsuga::Service
   # Aggregates clusters together until no two clusters are closer than
   # a given minimum distance.
   class Aggregator
+    # fraction of tile diagonal
+    MIN_DISTANCE_RATIO = 0.2
+
     def initialize(clusters)
       @_clusters = clusters.dup
     end
@@ -59,19 +62,13 @@ module Tsuga::Service
         depth = _clusters.first.depth
         point = Tsuga::Model::Point.new.set_coords(0,0)
         tile  = Tsuga::Model::Tile.including(point, :depth => depth)
-        (tile.northwest & tile.southeast) * 0.2
+        (tile.northwest & tile.southeast) * MIN_DISTANCE_RATIO
       end
     end
 
     private
 
     attr_reader :_clusters
-
-    class SortedSet < ::SortedSet
-      def pop
-        first.tap { |item| delete(item) }
-      end
-    end
 
     # model a pair of clusters such as [a,b] == [b,a]
     # and comparison is based on distance
@@ -95,10 +92,6 @@ module Tsuga::Service
 
       def has?(c)
         (@left.id == c.id) || (@right.id == c.id)
-      end
-
-      def hash
-        [@left.id, @right.id].sort.hash
       end
     end
   end
