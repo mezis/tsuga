@@ -19,18 +19,12 @@ module Tsuga::Model
   # - :destroy
   module Cluster
     include Tsuga::Model::PointTrait
-
+    
     def initialize
       self.depth   ||= 1
       self.geohash ||= 0xC000000000000000 # equator/greenwich
     end
 
-    def self.build_from(depth, other)
-      new.tap do |cluster|
-        cluster.depth = depth
-        cluster._inherit_fields_from(other)
-      end
-    end
 
     def merge(other)
       raise ArgumentError, 'not same depth'  unless depth == other.depth
@@ -44,26 +38,35 @@ module Tsuga::Model
     end
 
 
-    private
+    module ClassMethods
+      # Cluster factory.
+      # +other+ is either a Cluster or a Record
+      def build_from(depth, other)
+        c = new()
+        c.depth = depth
 
-    # other is either a Cluster or a Record
-    def _inherit_fields_from(other)
-      self.geohash       = other.geohash
-      self.children_ids  = [other.id]
-      self.children_type = other.class.name
+        c.geohash       = other.geohash
+        c.children_ids  = [other.id]
+        c.children_type = other.class.name
 
-      case other
-      when Record
-        self.weight      = 1
-        self.sum_lng     = other.lng
-        self.sum_lat     = other.lat
-      when Cluster
-        self.weight      = other.weight
-        self.sum_lng     = other.sum_lng
-        self.sum_lat     = other.sum_lat
-      else
-        raise ArgumentError
+        case other
+        when Record
+          c.weight      = 1
+          c.sum_lng     = other.lng
+          c.sum_lat     = other.lat
+        when Cluster
+          c.weight      = other.weight
+          c.sum_lng     = other.sum_lng
+          c.sum_lat     = other.sum_lat
+        else
+          raise ArgumentError
+        end
+        return c
       end
+    end
+
+    def self.included(by)
+      by.extend(ClassMethods)
     end
   end
 end
