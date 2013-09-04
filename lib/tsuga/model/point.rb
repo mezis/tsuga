@@ -71,7 +71,7 @@ module Tsuga::Model
 
     def inspect
       "<%s lat:%s lng:%s geohash:%s>" % [
-        self.class.name.gsub(/.*::/, ''),
+        (self.class.name || 'Point').gsub(/.*::/, ''),
         lat(false) ? ("%.3f" % lat(false)) : 'nil',
         lng(false) ? ("%.3f" % lng(false)) : 'nil',
         geohash(false) ? ("%016x" % geohash(false)) : 'nil'
