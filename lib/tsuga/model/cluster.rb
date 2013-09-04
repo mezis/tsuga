@@ -21,6 +21,7 @@ module Tsuga::Model
     include Tsuga::Model::PointTrait
     
     def initialize
+      super
       self.depth   ||= 1
       self.geohash ||= 0xC000000000000000 # equator/greenwich
     end
@@ -45,7 +46,8 @@ module Tsuga::Model
         c = new()
         c.depth = depth
 
-        c.geohash       = other.geohash
+        c.lat           = other.lat
+        c.lng           = other.lng
         c.children_ids  = [other.id]
         c.children_type = other.class.name
 
@@ -61,6 +63,8 @@ module Tsuga::Model
         else
           raise ArgumentError
         end
+
+        c.geohash # force geohash calculation
         return c
       end
     end
