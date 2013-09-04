@@ -5,12 +5,16 @@ require 'bundler/setup'
 require 'perftools'
 require 'benchmark'
 require 'tsuga/adapter/memory_adapter'
+require 'tsuga/adapter/sequel_adapter'
 require 'tsuga/service/aggregator'
 
-Clusters = Tsuga::Adapter::MemoryAdapter.clusters
+# Adapter = Tsuga::Adapter::MemoryAdapter.new
+
+DB = Sequel.connect 'mysql2://root@localhost/tsuga'
+Adapter = Tsuga::Adapter::SequelAdapter.test_adapter
 
 def new_cluster(depth, lat, lng)
-  Clusters.new.tap do |cluster|
+  Adapter.clusters.new.tap do |cluster|
     cluster.depth = depth
     cluster.set_coords(lat,lng)
     cluster.weight  = 1
@@ -23,10 +27,10 @@ end
 
 PerfTools::CpuProfiler.start("tmp/profile") do
   10.times do |idx|
-    Tsuga::Adapter::MemoryAdapter.clusters.delete_all
+    Adapter.clusters.delete_all
     lat_max = 45 - 1e-4
     lng_max = 90 - 1e-4
-    clusters = (1..150).map { new_cluster(2, rand*lat_max, rand*lng_max) }
+    clusters = (1..300).map { new_cluster(2, rand*lat_max, rand*lng_max) }
 
     runtime = Benchmark.measure do
       Tsuga::Service::Aggregator.new(clusters).run
