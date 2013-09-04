@@ -65,6 +65,7 @@ module Tsuga::Model
 
       self.lat = _lat
       self.lng = _lng
+      self.geohash
       self
     end
 
