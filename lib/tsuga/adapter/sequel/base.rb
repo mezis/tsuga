@@ -6,7 +6,7 @@ require 'delegate'
 module Tsuga::Adapter::Sequel
   module Base
     def self.included(by)
-      by.extend ClassMethods
+      by.dataset_module DatasetMethods
     end
 
     def id
@@ -17,7 +17,7 @@ module Tsuga::Adapter::Sequel
       save
     end
 
-    module ClassMethods
+    module DatasetMethods
       def find_by_id(id)
         self[id]
       end
@@ -31,18 +31,10 @@ module Tsuga::Adapter::Sequel
       end
 
       def find_each
-        where.each_page(2000) do |page|
+        where.extension(:pagination).each_page(2000) do |page|
           page.each { |r| yield r }
-        end
-      end
-
-      def wrapped_dataset
-        SimpleDelegator.new(yield).tap do |scope|
-          scope.extend(ClassMethods)
-          scope.extend(self::Scopes) if defined?(self::Scopes)
         end
       end
     end
   end
 end
-

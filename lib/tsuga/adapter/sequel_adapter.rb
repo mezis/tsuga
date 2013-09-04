@@ -1,53 +1,42 @@
 require 'tsuga/adapter/base'
-require 'sequel'
-require 'sqlite3'
+require 'tsuga/adapter/sequel/record'
+require 'tsuga/adapter/sequel/cluster'
+require 'tsuga/adapter/sequel/test'
 
 module Tsuga::Adapter
   class SequelAdapter < Base
-    def initialize(url = nil)
-      @_connection = url ? ::Sequel.connect(url) : ::Sequel.sqlite
-      @_connection.extension(:pagination)
+    def initialize(options = {})
+      @_clusters_model = options.fetch :clusters
+      @_records_model  = options.fetch :records
     end
 
     def records
-      ensure_schema
-      require 'tsuga/adapter/sequel/record'
-      Tsuga::Adapter::Sequel::Record
+      @_records ||= begin
+        Class.new(@_records_model) do
+          include Sequel::Base
+          include Sequel::Record
+          include Tsuga::Model::Record
+        end
+      end
     end
 
     def clusters
-      ensure_schema
-      require 'tsuga/adapter/sequel/cluster'
-      Tsuga::Adapter::Sequel::Cluster
-    end
-
-    private
-
-    def ensure_schema
-      @_connection.create_table?(:records) do
-        primary_key :id
-        BigDecimal  :geohash, :size => 21
-        Float       :lat
-        Float       :lng
-
-        index       :geohash
-      end
-
-      @_connection.create_table?(:clusters) do
-        primary_key :id
-        BigDecimal  :geohash, :size => 21
-        Float       :lat
-        Float       :lng
-        Integer     :depth
-        Integer     :parent_id
-        String      :children_type
-        String      :children_ids # FIXME
-        Float       :sum_lat
-        Float       :sum_lng
-        Integer     :weight
-
-        index       [:depth, :geohash]
+      @_clusters ||= begin
+        Class.new(@_clusters_model) do
+          include Sequel::Base
+          include Sequel::Cluster
+          include Tsuga::Model::Cluster
+        end
       end
     end
+
+    def self.test_adapter
+      @_test_adapter ||= begin
+        new(
+          :clusters => Sequel::Test.models.clusters,
+          :records  => Sequel::Test.models.records)
+      end
+    end
+
   end
 end

@@ -2,22 +2,19 @@ require 'tsuga/model/record'
 require 'tsuga/adapter/sequel/base'
 
 module Tsuga::Adapter::Sequel
-  class RecordModel < Sequel::Model(:records)
-  end
-
-  class Record < RecordModel
-    include Base
+  module Record
     include Tsuga::Model::Record
+
+    def self.included(by)
+      by.dataset_module Scopes
+    end
 
     module Scopes
       def in_tile(tile)
-        wrapped_dataset do
-          nw = tile.northwest.geohash
-          se = tile.southeast.geohash
-          where { geohash >= nw }.and { geohash <= se }
-        end
+        nw = tile.northwest.geohash
+        se = tile.southeast.geohash
+        where { geohash >= nw }.and { geohash <= se }
       end
     end
-    extend Scopes
   end
 end
