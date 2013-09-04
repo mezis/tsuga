@@ -2,9 +2,6 @@ require 'sequel'
 require 'sqlite3'
 require 'ostruct'
 
-# Make sure a connection exists
-Sequel::DATABASES.first || Sequel.sqlite
-
 module Tsuga::Adapter::Sequel
   module Test
     class << self
@@ -13,6 +10,9 @@ module Tsuga::Adapter::Sequel
       end
 
       def build_test_models
+        # Make sure a connection exists
+        Sequel::DATABASES.first || Sequel.sqlite
+        
         cluster_model = Sequel::Model(:test_clusters)
         record_model  = Sequel::Model(:test_records)
         db = cluster_model.db
