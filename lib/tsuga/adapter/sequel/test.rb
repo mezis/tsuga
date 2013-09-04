@@ -12,7 +12,7 @@ module Tsuga::Adapter::Sequel
       def build_test_models
         # Make sure a connection exists
         Sequel::DATABASES.first || Sequel.sqlite
-        
+
         cluster_model = Sequel::Model(:test_clusters)
         record_model  = Sequel::Model(:test_records)
         db = cluster_model.db
@@ -20,7 +20,7 @@ module Tsuga::Adapter::Sequel
         db.drop_table?(record_model.table_name)
         db.create_table(record_model.table_name) do
           primary_key :id
-          Bignum      :geohash
+          BigDecimal  :geohash, :size => 21
           Float       :lat
           Float       :lng
 
@@ -30,7 +30,7 @@ module Tsuga::Adapter::Sequel
         db.drop_table?(cluster_model.table_name)
         db.create_table(cluster_model.table_name) do
           primary_key :id
-          Bignum      :geohash
+          BigDecimal  :geohash, :size => 21
           Float       :lat
           Float       :lng
           Integer     :depth
