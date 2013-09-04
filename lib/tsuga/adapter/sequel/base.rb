@@ -18,7 +18,7 @@ module Tsuga::Adapter::Sequel
     end
 
     module ClassMethods
-      def find(id)
+      def find_by_id(id)
         self[id]
       end
 

@@ -38,7 +38,7 @@ module Tsuga::Adapter::Memory
         @_last_id += 1
       end
 
-      def find(id)
+      def find_by_id(id)
         _records.fetch(id) { raise Tsuga::RecordNotFound }.clone
       end
 
@@ -77,8 +77,8 @@ module Tsuga::Adapter::Memory
         Scope.new(_origin, _filters + filters)
       end
 
-      def find(id)
-        _origin.find(id).tap do |record|
+      def find_by_id(id)
+        _origin.find_by_id(id).tap do |record|
           raise Tsuga::RecordNotFound unless _matches?(record)
         end
       end

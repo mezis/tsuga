@@ -43,7 +43,7 @@ module Tsuga::Service
         log "creating clusters from children"
         while points_ids.any?
           log "... #{points_ids.size} children left"
-          point = find_from.find(points_ids.first)
+          point = find_from.find_by_id(points_ids.first)
           tile = Tile.including(point, :depth => depth)
           used_ids = _create_clusters(tile)
           points_ids -= used_ids
@@ -56,7 +56,7 @@ module Tsuga::Service
         log "aggregating clusters"
         while cluster_ids.any?
           log "... #{cluster_ids.size} clusters to process"
-          cluster = _adapter.clusters.find(cluster_ids.first)
+          cluster = _adapter.clusters.find_by_id(cluster_ids.first)
           tile = Tile.including(cluster, :depth => depth)
           used_ids = _assemble_clusters(tile)
           cluster_ids -= used_ids

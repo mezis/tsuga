@@ -61,7 +61,7 @@ describe Tsuga::Service::Clusterer do
 
       let :toplevel_cluster do
         id = adapter.clusters.at_depth(3).collect_ids.first
-        adapter.clusters.find(id)
+        adapter.clusters.find_by_id(id)
       end
 
       let :barycenter do

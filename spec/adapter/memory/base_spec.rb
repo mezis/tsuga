@@ -19,7 +19,7 @@ describe Tsuga::Adapter::Memory::Base do
 
     it 'makes objects retrievable' do
       stuff.persist!
-      expect { stuff_class.find(stuff.id) }.not_to raise_error
+      expect { stuff_class.find_by_id(stuff.id) }.not_to raise_error
     end
 
     it 'persists only current state' do
@@ -27,7 +27,7 @@ describe Tsuga::Adapter::Memory::Base do
       stuff.persist!
       stuff.foo = 2
 
-      stuff_class.find(stuff.id).foo.should == 1
+      stuff_class.find_by_id(stuff.id).foo.should == 1
     end
   end
 
@@ -35,7 +35,7 @@ describe Tsuga::Adapter::Memory::Base do
     it 'removes records' do
       id = stuff.persist!.id
       stuff.destroy
-      expect { stuff_class.find(id) }.to raise_error
+      expect { stuff_class.find_by_id(id) }.to raise_error
     end
 
     it 'clears record id' do
@@ -46,16 +46,16 @@ describe Tsuga::Adapter::Memory::Base do
   describe '.find' do
     it 'retrives record by ID' do
       stuff.persist!
-      stuff_class.find(stuff.id).id.should == stuff.id
+      stuff_class.find_by_id(stuff.id).id.should == stuff.id
     end
 
     it 'fails if not persisted' do
       stuff = stuff_class.new
-      expect { stuff_class.find(stuff.id) }.to raise_error(Tsuga::RecordNotFound)
+      expect { stuff_class.find_by_id(stuff.id) }.to raise_error(Tsuga::RecordNotFound)
     end
 
     it 'fails if ID is unknown' do
-      expect { stuff_class.find(123) }.to raise_error(Tsuga::RecordNotFound)
+      expect { stuff_class.find_by_id(123) }.to raise_error(Tsuga::RecordNotFound)
     end
   end
 
@@ -83,7 +83,7 @@ describe Tsuga::Adapter::Memory::Base do
     it 'forgets persisted records' do
       stuff.persist!
       stuff_class.delete_all
-      expect { stuff_class.find(stuff.id) }.to raise_error
+      expect { stuff_class.find_by_id(stuff.id) }.to raise_error
     end
   end
 
@@ -115,23 +115,23 @@ describe Tsuga::Adapter::Memory::Base do
 
     describe '#find' do
       it 'finds selected items' do
-        expect { subject.find(2) }.not_to raise_error
+        expect { subject.find_by_id(2) }.not_to raise_error
       end
 
       it 'filters out unscoped items' do
-        expect { subject.find(1) }.to raise_error
+        expect { subject.find_by_id(1) }.to raise_error
       end
     end
 
     describe '#delete_all' do
       it 'deletes selected items' do
         subject.delete_all
-        expect { stuff_class.find(2) }.to raise_error
+        expect { stuff_class.find_by_id(2) }.to raise_error
       end
 
       it 'leaves filtered items' do
         subject.delete_all
-        expect { stuff_class.find(1) }.not_to raise_error
+        expect { stuff_class.find_by_id(1) }.not_to raise_error
       end
     end
 
