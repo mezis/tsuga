@@ -3,7 +3,7 @@ require 'tsuga/service/aggregator'
 
 module Tsuga::Service
   class Clusterer
-    MAX_DEPTH = 20
+    MAX_DEPTH = 19
     MIN_DEPTH = 3
     Tile = Tsuga::Model::Tile
 

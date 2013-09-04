@@ -27,7 +27,7 @@ describe Tsuga::Service::Clusterer do
 
       it 'creates 1 cluster per depth' do
         subject.run
-        adapter.clusters.collect_ids.length.should == 18
+        adapter.clusters.collect_ids.length.should == 17
       end
 
       it 'creates clusters with the same position' do
@@ -48,7 +48,7 @@ describe Tsuga::Service::Clusterer do
 
       it 'creates 2 clusters per depth' do
         subject.run
-        adapter.clusters.collect_ids.length.should == 36
+        adapter.clusters.collect_ids.length.should == 34
       end
     end
 
