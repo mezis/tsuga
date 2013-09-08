@@ -13,5 +13,9 @@ module Tsuga::Adapter
     def clusters
       Tsuga::Adapter::Memory::Cluster
     end
+
+    def self.test_adapter
+      new
+    end
   end
 end
