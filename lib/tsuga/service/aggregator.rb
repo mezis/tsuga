@@ -77,6 +77,7 @@ module Tsuga::Service
       attr_reader :distance
 
       def initialize(c1, c2)
+        raise ArgumentError, 'pair elements must be distinct' if c1.id == c2.id
         @left  = c1
         @right = c2
         @distance = (@left & @right)
