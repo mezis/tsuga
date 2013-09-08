@@ -31,9 +31,12 @@ module Tsuga::Adapter::Sequel
       end
 
       def find_each
-        where.extension(:pagination).each_page(2000) do |page|
-          page.each { |r| yield r }
-        end
+        # TODO: pagination would be nice to have here, but seems not to
+        # work out-of-the-box with Sequel
+        # where.extension(:pagination).each_page(2000) do |page|
+        #   page.each { |r| yield r }
+        # end
+        all.each { |r| yield r }
       end
     end
   end
