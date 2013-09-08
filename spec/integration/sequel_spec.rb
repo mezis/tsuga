@@ -42,6 +42,14 @@ describe 'adapters' do
         toplevel_cluster.lat
         (toplevel_cluster & barycenter).should < 1e-6 # 10 micro degrees ~ 1 meter at equator
       end
+
+      it 'all depths have same total weight' do
+        3.upto(19) do |depth|
+          total_weight = 0
+          adapter.clusters.at_depth(depth).find_each { |c| total_weight += c.weight }
+          total_weight.should == 10
+        end
+      end
     end
   end
 
