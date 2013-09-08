@@ -6,5 +6,6 @@ gemspec
 gem 'sqlite3',       :require => false
 gem 'mysql2',        :require => false
 gem 'sequel',        :require => false
+gem 'mongoid',       :require => false
 gem 'benchmark-ips', :require => false
 gem 'perftools.rb',  :require => false

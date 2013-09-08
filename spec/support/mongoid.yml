@@ -1,0 +1,17 @@
+development:
+  sessions:
+    default:
+      database: tsuga_dev
+      hosts:
+        - localhost:27017
+      options:
+        safe: true
+test:
+  sessions:
+    default:
+      database: tsuga_test
+      hosts:
+        - localhost:27017
+      options:
+        safe: true
+

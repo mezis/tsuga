@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-ENV['CPUPROFILE_FREQUENCY'] = '500'
 
 require 'bundler/setup'
 require 'perftools'
@@ -8,16 +7,27 @@ require 'zlib'
 require 'yaml'
 require 'tsuga/adapter/memory_adapter'
 require 'tsuga/adapter/sequel_adapter'
+require 'tsuga/adapter/mongoid_adapter'
 require 'tsuga/service/clusterer'
 
 Limit = ENV.fetch('LIMIT', '200').to_i
 
-# Adapter = Tsuga::Adapter::MemoryAdapter.new
+ENV['CPUPROFILE_FREQUENCY'] ||= '500'
 
-DB = Sequel.connect 'mysql2://root@localhost/tsuga'
-Adapter = Tsuga::Adapter::SequelAdapter.test_adapter
-
-Records = Adapter.records
+case ENV['ADAPTER']
+when /memory/i
+  Adapter = Tsuga::Adapter::MemoryAdapter.new
+when /mysql/i
+  DB = Sequel.connect 'mysql2://root@localhost/tsuga'
+  Adapter = Tsuga::Adapter::SequelAdapter.test_adapter
+when /mongo/i
+  Adapter = Tsuga::Adapter::MongoidAdapter.test_adapter
+else
+  puts 'specify an ADAPTER'
+  exit 1
+end
+Clusters = Adapter.clusters
+Records  = Adapter.records
 
 puts 'loading records...'
 raw = File.open('doc/places.yml.gz', 'r') { |io| Zlib::GzipReader.new(io).read }
