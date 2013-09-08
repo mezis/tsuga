@@ -1,19 +1,20 @@
 require 'spec_helper'
 require 'tsuga/service/clusterer'
+require 'tsuga/adapter/memory_adapter'
 require 'tsuga/adapter/sequel_adapter'
+require 'tsuga/adapter/mongoid_adapter'
 
-describe 'Sequel integration' do
-  let(:adapter)   { Tsuga::Adapter::SequelAdapter.test_adapter  }
-  let(:clusterer) { Tsuga::Service::Clusterer.new(adapter) }
+describe 'adapters' do
+  shared_examples_for 'an adapter suitable for clustering' do
+    let(:clusterer) { Tsuga::Service::Clusterer.new(adapter) }
 
-  def make_record(lat, lng)
-    adapter.records.new.set_coords(lat,lng).persist!
-  end
+    def make_record(lat, lng)
+      adapter.records.new.set_coords(lat,lng).persist!
+    end
 
-  before { adapter.clusters.delete_all }
-  before { adapter.records.delete_all }
+    before { adapter.clusters.delete_all }
+    before { adapter.records.delete_all }
 
-  describe '#run' do
     context 'with random records' do
       let(:count) { 10 }
       before do
@@ -40,12 +41,22 @@ describe 'Sequel integration' do
       it 'toplevel cluster is centered' do
         toplevel_cluster.lat
         (toplevel_cluster & barycenter).should < 1e-6 # 10 micro degrees ~ 1 meter at equator
-        # (toplevel_cluster & barycenter).should < 1e-6 # 1 micro degrees ~ 10 cm at equator
       end
-
-      # it 'debugs' do
-      #   require 'pry' ; require 'pry-nav' ; binding.pry
-      # end
     end
+  end
+
+  describe 'memory adapter' do
+    let(:adapter)   { Tsuga::Adapter::MemoryAdapter.test_adapter }
+    it_should_behave_like 'an adapter suitable for clustering'
+  end
+
+  describe 'sequel adapter' do
+    let(:adapter)   { Tsuga::Adapter::SequelAdapter.test_adapter }
+    it_should_behave_like 'an adapter suitable for clustering'
+  end
+
+  describe 'mongo adapter' do
+    let(:adapter)   { Tsuga::Adapter::MongoidAdapter.test_adapter }
+    it_should_behave_like 'an adapter suitable for clustering'
   end
 end
