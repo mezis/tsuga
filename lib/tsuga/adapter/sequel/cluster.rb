@@ -9,6 +9,20 @@ module Tsuga::Adapter::Sequel
       by.dataset_module Scopes
     end
 
+    def children_ids
+      @_children_ids ||= begin
+        stored = super
+        stored ? stored.split(',').map(&:to_i) : []
+      end
+    end
+
+    def children_ids=(value)
+      changed = (@_children_ids != value)
+      @_children_ids = value
+      super(@_children_ids.join(',')) if changed
+      @_children_ids
+    end
+
     module Scopes
       def at_depth(depth)
         where(:depth => depth)

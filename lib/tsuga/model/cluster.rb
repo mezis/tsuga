@@ -35,7 +35,7 @@ module Tsuga::Model
       self.sum_lat += other.sum_lat
       self.sum_lng += other.sum_lng
       set_coords(sum_lat/weight, sum_lng/weight)
-      # self.children_ids += other.children_ids
+      self.children_ids += other.children_ids
     end
 
 
