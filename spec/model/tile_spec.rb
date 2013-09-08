@@ -20,7 +20,7 @@ describe Tsuga::Model::Tile do
       end
 
       it 'calculates northwest' do
-        result.northwest.should == point
+        result.northwest.should =~ point
       end
 
       it 'calculates southeast' do

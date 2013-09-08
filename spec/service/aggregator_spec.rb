@@ -95,6 +95,24 @@ describe Tsuga::Service::Aggregator do
     end
 
 
+    context 'with superimposed points' do
+      let(:lat) { 22.5 }
+      let(:lng) { 45 }
+
+      let(:clusters) {[
+        new_cluster(2, lat, lng),
+        new_cluster(2, lat, lng),
+        new_cluster(2, lat, lng)
+      ]}
+      
+      it('passes') { subject.run }
+
+      it 'groups clusters' do 
+        subject.run
+        all_clusters.length.should == 1
+      end
+    end
+
     context 'with 2 close and 2 distant clusters' do
       let(:lat) { 22.5 }
       let(:lng) { 45 }

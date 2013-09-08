@@ -69,23 +69,23 @@ describe Tsuga::Model::Point do
 
   describe '(comparison)' do
     it 'preserves lat-order' do
-      described_class.new.set_coords(45, 2).should <
-      described_class.new.set_coords(46, 2)
+      described_class.new.set_coords(45, 2).geohash.should <
+      described_class.new.set_coords(46, 2).geohash
     end
 
     it 'preserves lng-order' do
-      described_class.new.set_coords(45, 2).should <
-      described_class.new.set_coords(45, 3)
+      described_class.new.set_coords(45, 2).geohash.should <
+      described_class.new.set_coords(45, 3).geohash
     end
 
     it 'preserves order around greenwich' do
-      described_class.new.set_coords(45, -1).should <
-      described_class.new.set_coords(45,  1)
+      described_class.new.set_coords(45, -1).geohash.should <
+      described_class.new.set_coords(45,  1).geohash
     end
 
     it 'preserves order around equator' do
-      described_class.new.set_coords(-1, 2).should <
-      described_class.new.set_coords( 1, 2)
+      described_class.new.set_coords(-1, 2).geohash.should <
+      described_class.new.set_coords( 1, 2).geohash
     end
   end
 end

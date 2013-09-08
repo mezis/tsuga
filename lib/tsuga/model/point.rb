@@ -10,15 +10,16 @@ module Tsuga::Model
   # - :lng (float, -180..180)
   # 
   module PointTrait
-    include Comparable
 
-    def <=>(other)
-      geohash <=> other.geohash
-    end
 
 
     def distance_to(other)
       Math.sqrt((self.lat - other.lat) ** 2 + (self.lng - other.lng) ** 2)
+    end
+
+
+    def =~(other)
+      self.geohash == other.geohash
     end
 
 

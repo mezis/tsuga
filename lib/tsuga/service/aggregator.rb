@@ -86,12 +86,16 @@ module Tsuga::Service
         self.distance <=> other.distance
       end
 
+      def ==(other)
+        (self.left == other.left) && (self.right == other.right)
+      end
+
       def values
         [@left, @right]
       end
 
       def has?(c)
-        (@left.id == c.id) || (@right.id == c.id)
+        (@left == c) || (@right == c)
       end
     end
   end

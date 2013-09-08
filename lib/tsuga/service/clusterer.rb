@@ -84,15 +84,13 @@ module Tsuga::Service
       used_ids = []
 
       if tile.depth == MAX_DEPTH
-        _adapter.records
-        .in_tile(tile).find_each do |child|
+        _adapter.records.in_tile(tile).find_each do |child|
           cluster = _adapter.clusters.build_from(tile.depth, child)
           cluster.persist!
           used_ids << child.id
         end
       else
-        _adapter.clusters.at_depth(tile.depth+1)
-        .in_tile(tile).find_each do |child|
+        _adapter.clusters.at_depth(tile.depth+1).in_tile(tile).find_each do |child|
           cluster = _adapter.clusters.build_from(tile.depth, child)
           cluster.persist!
 

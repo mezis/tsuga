@@ -76,7 +76,7 @@ describe Tsuga::Service::Clusterer do
       end
 
       it 'toplevel cluster is centered' do
-        toplevel_cluster.should == barycenter
+        toplevel_cluster.should =~ barycenter
       end
     end
   end
