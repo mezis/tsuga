@@ -39,13 +39,13 @@ module Tsuga::Service
 
         # merge clusters
         left.merge(right)
-        _clusters.delete(right)
+        _clusters.delete_if { |c| c.id == right.id }
         to_delete << right
         to_persist << left.id
 
         # create new pairs
         _clusters.each do |cluster|
-          next if cluster == left
+          next if cluster.id == left.id
           pairs << Pair.new(left, cluster)
         end
       end
@@ -87,7 +87,7 @@ module Tsuga::Service
       end
 
       def ==(other)
-        (self.left == other.left) && (self.right == other.right)
+        (self.left.id == other.left.id) && (self.right.id == other.right.id)
       end
 
       def values
@@ -95,7 +95,7 @@ module Tsuga::Service
       end
 
       def has?(c)
-        (@left == c) || (@right == c)
+        (@left.id == c.id) || (@right.id == c.id)
       end
     end
   end
