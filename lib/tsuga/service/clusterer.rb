@@ -40,32 +40,18 @@ module Tsuga::Service
         # assuming the data set is sparse, we walk the set instead of walking
         # all possible tiles.
         # 1 tile processed at each iteractions.
-        log "creating clusters from children"
+        
         while points_ids.any?
           log "... #{points_ids.size} children left"
           point = find_from.find_by_id(points_ids.first)
           tile = Tile.including(point, :depth => depth)
-          used_ids = _create_clusters(tile)
+          used_ids, clusters = _build_clusters(tile)
           points_ids -= used_ids
+          _assemble_clusters(clusters)
+          clusters.each { |c| c.persist! }
         end
-        log "... done"
 
-        # with the same sparse-wlk logic, run aggregation in each tile
-        # containing clusters.
-        cluster_ids = _adapter.clusters.at_depth(depth).collect_ids
-        log "aggregating clusters"
-        while cluster_ids.any?
-          log "... #{cluster_ids.size} clusters to process"
-          cluster = _adapter.clusters.find_by_id(cluster_ids.first)
-          tile = Tile.including(cluster, :depth => depth)
-          used_ids = _assemble_clusters(tile)
-          cluster_ids -= used_ids
-        end
-        log "... done"
-
-        # not implemented yet:
-        # run clustering with this tile's and the neighbouringh tiles's clusters
-        # _assemble_clusters(*tile.neighbours)
+        # TODO: fix parent_id in tree
       end
     end
 
@@ -80,43 +66,31 @@ module Tsuga::Service
 
 
     # return the record IDs used
-    def _create_clusters(tile)
+    def _build_clusters(tile)
       used_ids = []
+      clusters = []
 
       if tile.depth == MAX_DEPTH
         _adapter.records.in_tile(tile).find_each do |child|
           cluster = _adapter.clusters.build_from(tile.depth, child)
-          cluster.persist!
+          clusters << cluster
           used_ids << child.id
         end
       else
         _adapter.clusters.at_depth(tile.depth+1).in_tile(tile).find_each do |child|
           cluster = _adapter.clusters.build_from(tile.depth, child)
-          cluster.persist!
-
-          child.parent_id = child.id
-          child.persist!
+          clusters << cluster
           used_ids << child.id
         end
       end
 
-      return used_ids
+      return [used_ids, clusters]
     end
 
 
-    def _assemble_clusters(*tiles)
-      raise ArgumentError if tiles.map(&:depth).sort.uniq.size > 1
-
-      clusters = []
-      depth = tiles.first.depth
-
-      _adapter.clusters
-        .at_depth(depth)
-        .in_tile(*tiles)
-        .find_each { |c| clusters << c }
-      used_ids = clusters.map(&:id)
+    def _assemble_clusters(clusters)
+      warn "running aggregation on #{clusters.size} clusters" if clusters.size > 50
       Aggregator.new(clusters).run
-      used_ids
     end
 
   end

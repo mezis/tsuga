@@ -13,13 +13,6 @@ describe Tsuga::Service::Aggregator do
       cluster.sum_lat = lat
       cluster.sum_lng = lng
       cluster.children_ids = []
-      cluster.persist!
-    end
-  end
-
-  def all_clusters
-    [].tap do |result|
-      adapter.clusters.find_each { |c| result << c }
     end
   end
 
@@ -63,7 +56,7 @@ describe Tsuga::Service::Aggregator do
 
       it('preserves clusers') do 
         subject.run
-        all_clusters.length.should == 4
+        clusters.length.should == 4
       end
     end
 
@@ -82,12 +75,12 @@ describe Tsuga::Service::Aggregator do
 
       it 'groups clusters' do 
         subject.run
-        all_clusters.length.should == 1
+        clusters.length.should == 1
       end
 
       it 'computes centroid' do
         subject.run
-        all_clusters.first.tap do |cluster|
+        clusters.first.tap do |cluster|
           cluster.lat.should == lat
           cluster.lng.should == lng
         end
@@ -109,7 +102,7 @@ describe Tsuga::Service::Aggregator do
 
       it 'groups clusters' do 
         subject.run
-        all_clusters.length.should == 1
+        clusters.length.should == 1
       end
     end
 
@@ -128,7 +121,7 @@ describe Tsuga::Service::Aggregator do
 
       it 'groups clusters' do 
         subject.run
-        all_clusters.length.should == 2
+        clusters.length.should == 2
       end
     end
 

@@ -11,7 +11,7 @@ module Tsuga::Service
     MIN_DISTANCE_RATIO = 0.2
 
     def initialize(clusters)
-      @_clusters = clusters.dup
+      @_clusters = clusters
     end
 
     def run
@@ -39,20 +39,14 @@ module Tsuga::Service
 
         # merge clusters
         left.merge(right)
-        _clusters.delete_if { |c| c.id == right.id }
-        to_delete << right
-        to_persist << left.id
+        _clusters.delete_if { |c| c.object_id == right.object_id }
 
         # create new pairs
         _clusters.each do |cluster|
-          next if cluster.id == left.id
+          next if cluster.object_id == left.object_id
           pairs << Pair.new(left, cluster)
         end
       end
-
-      # persistence
-      _clusters.each { |c| c.persist! if to_persist.include?(c.id) }
-      to_delete.each { |c| c.destroy }
       nil
     end
 
@@ -77,7 +71,7 @@ module Tsuga::Service
       attr_reader :distance
 
       def initialize(c1, c2)
-        raise ArgumentError, 'pair elements must be distinct' if c1.id == c2.id
+        raise ArgumentError, 'pair elements must be distinct' if c1.object_id == c2.object_id
         @left  = c1
         @right = c2
         @distance = (@left & @right)
@@ -88,7 +82,7 @@ module Tsuga::Service
       end
 
       def ==(other)
-        (self.left.id == other.left.id) && (self.right.id == other.right.id)
+        (self.left.object_id == other.left.object_id) && (self.right.object_id == other.right.object_id)
       end
 
       def values
@@ -96,7 +90,7 @@ module Tsuga::Service
       end
 
       def has?(c)
-        (@left.id == c.id) || (@right.id == c.id)
+        (@left.object_id == c.object_id) || (@right.object_id == c.object_id)
       end
     end
   end
