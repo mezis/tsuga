@@ -16,6 +16,9 @@ module Tsuga::Adapter
           include Mongoid::Base
           include Mongoid::Record
           include Tsuga::Model::Record
+
+          # FIXME: hardly elegant but Mongoid insists on a class name.
+          Tsuga::Adapter::MongoidAdapter.const_set :Record, self
         end
       end
     end
@@ -26,6 +29,9 @@ module Tsuga::Adapter
           include Mongoid::Base
           include Mongoid::Cluster
           include Tsuga::Model::Cluster
+
+          # FIXME: see above
+          Tsuga::Adapter::MongoidAdapter.const_set :Cluster, self
         end
       end
     end
