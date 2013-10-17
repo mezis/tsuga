@@ -68,3 +68,13 @@ __END__
   user  83m0.333s
   sys 8m34.427s
 
+10,000 real records (properties)
+  122.76 real
+   92.49 user
+    7.50 sys
+
+20,000 real records (properties)
+  239.47 real
+   176.16 user
+    15.94 sys
+
