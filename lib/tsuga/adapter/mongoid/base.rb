@@ -8,14 +8,6 @@ module Tsuga::Adapter::Mongoid
       by.extend ScopeMethods
     end
 
-    # def id
-    #   @_cached_id ||= begin
-    #     v = super
-    #     v = v.to_s.to_i(16) unless v.nil?
-    #     v
-    #   end
-    # end
-
     def persist!
       save!
     end
