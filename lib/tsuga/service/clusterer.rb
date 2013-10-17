@@ -35,12 +35,19 @@ module Tsuga::Service
           return
         end
 
-        # for all children at depth N+1 (records if deepest level)
-        # create a cluster of level N pointing to the child.
+        # TODO: group points to cluster by tile, and run on tiles in parallel.
+
         # assuming the data set is sparse, we walk the set instead of walking
-        # all possible tiles.
-        # 1 tile processed at each iteractions.
-        
+        # all possible tiles:
+        # 
+        # as long as there are unprocessed children at depth N+1 (records if deepest level)
+        # find the tile for the first remaining child;
+        # in this tile,
+        #   build a cluster of level N pointing to each child (_build_clusters)
+        #   then run aggregation (_assemble_clusters)
+        # 
+        # 1 tile is processed at each iteration.
+        # 
         while points_ids.any?
           log "... #{points_ids.size} children left"
           point = find_from.find_by_id(points_ids.first)
