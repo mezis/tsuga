@@ -30,8 +30,12 @@ else
   puts 'specify an ADAPTER'
   exit 1
 end
+
 Clusters = Adapter.clusters
 Records  = Adapter.records
+
+RAW_PROFILE = "tmp/profile#{ENV['ADAPTER']}"
+PDF_PROFILE = "#{RAW_PROFILE}.pdf"
 
 puts 'loading records...'
 data = {}
@@ -53,12 +57,12 @@ end
 puts " #{Records.count} records created"
 
 puts 'profiling...'
-PerfTools::CpuProfiler.start("tmp/profile") do
+PerfTools::CpuProfiler.start(RAW_PROFILE) do
   Tsuga::Service::Clusterer.new(Adapter).run
 end
 
-system "pprof.rb --pdf tmp/profile > tmp/profile.pdf"
-system "open tmp/profile.pdf"
+system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"
+system "open #{PDF_PROFILE}"
 
 
 __END__

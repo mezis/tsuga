@@ -25,6 +25,8 @@ else
   exit 1
 end
 
+RAW_PROFILE = "tmp/profile#{ENV['ADAPTER']}"
+PDF_PROFILE = "#{RAW_PROFILE}.pdf"
 
 def new_cluster(depth, lat, lng)
   Adapter.clusters.new.tap do |cluster|
@@ -39,7 +41,7 @@ def new_cluster(depth, lat, lng)
 end
 
 
-PerfTools::CpuProfiler.start("tmp/profile") do
+PerfTools::CpuProfiler.start(RAW_PROFILE) do
   begin
     10.times do |idx|
       Adapter.clusters.delete_all
@@ -62,5 +64,5 @@ PerfTools::CpuProfiler.start("tmp/profile") do
   end
 end
 
-system "pprof.rb --pdf tmp/profile > tmp/profile.pdf"
-system "open tmp/profile.pdf"
+system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"
+system "open #{PDF_PROFILE}"
