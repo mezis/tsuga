@@ -33,8 +33,8 @@ module Tsuga::Model
 
         new.tap do |t|
           t.depth = depth
-          t.northwest = Point.new(point.geohash.to_i & lo_mask)
-          t.southeast = Point.new(point.geohash.to_i & lo_mask | hi_mask)
+          t.northwest = Point.new(geohash: point.geohash.to_i & lo_mask)
+          t.southeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
         end
       end
     end

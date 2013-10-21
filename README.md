@@ -94,8 +94,8 @@ rebuild a tree of clusters.
 
 Tsuga extended your cluster class with helper class methods:
 
-    nw = OpenStruct.new(lat: 45, lng: 1)
-    se = OpenStruct.new(lat: 44, lng: 2)
+    nw = Tsuga::Point(lat: 45, lng: 1)
+    se = Tsuga::Point(lat: 44, lng: 2)
     Cluster.in_viewport(nw, se)
 
 will return an enumerable (scopish where possible), that responds to
