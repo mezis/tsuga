@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'tsuga/adapter/sequel/test'
+require 'tsuga/adapter/mongoid/test'
 require 'integration/shared'
 
 describe 'integration' do
-  describe 'sequel adapter' do
-    let(:adapter)   { Tsuga::Adapter::Sequel::Test.clusters }
+  describe 'mongoid adapter' do
+    let(:adapter) { Tsuga::Adapter::Mongoid::Test.clusters }
     it_should_behave_like 'an adapter suitable for clustering'
   end
 end

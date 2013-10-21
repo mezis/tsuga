@@ -7,28 +7,28 @@ module Tsuga::Service
     MIN_DEPTH = 3
     Tile = Tsuga::Model::Tile
 
-    attr_reader :_adapter
+    attr_reader :_adapter, :_source
 
-    def initialize(adapter)
+    def initialize(source: nil, adapter: nil)
+      @_source  = source
       @_adapter = adapter
     end
 
     def run
       # delete all clusters
-      _adapter.clusters.delete_all
+      _adapter.delete_all
 
-      # for all depths N from 20 to 3
-      MAX_DEPTH.downto(MIN_DEPTH) do |depth|
+      # create lowest-level clusters
+      _source.find_each do |record|
+        _adapter.build_from(MAX_DEPTH, record).persist!
+      end
+
+      # for all depths N from 18 to 3
+      (MAX_DEPTH-1).downto(MIN_DEPTH) do |depth|
         log "at depth #{depth}"
 
         # find children (clusters or records) from deeper level, N+!
-        if depth == MAX_DEPTH
-          points_ids = _adapter.records.collect_ids
-          find_from = _adapter.records
-        else
-          points_ids = _adapter.clusters.at_depth(depth+1).collect_ids
-          find_from = _adapter.clusters
-        end
+        points_ids = _adapter.at_depth(depth+1).collect_ids
 
         if points_ids.empty?
           log "nothing to cluster"
@@ -50,12 +50,15 @@ module Tsuga::Service
         # 
         while points_ids.any?
           log "... #{points_ids.size} children left"
-          point = find_from.find_by_id(points_ids.first)
+          point = _adapter.find_by_id(points_ids.first)
           tile = Tile.including(point, :depth => depth)
           used_ids, clusters = _build_clusters(tile)
           points_ids -= used_ids
           _assemble_clusters(clusters)
+
+          # TODO: use a save queue, only run saves if > 100 clusters to write
           clusters.each { |c| c.persist! }
+          # _adapter.dataset.multi_insert(clusters.map(&:to_hash))
         end
 
         # TODO: fix parent_id in tree
@@ -77,18 +80,10 @@ module Tsuga::Service
       used_ids = []
       clusters = []
 
-      if tile.depth == MAX_DEPTH
-        _adapter.records.in_tile(tile).find_each do |child|
-          cluster = _adapter.clusters.build_from(tile.depth, child)
-          clusters << cluster
-          used_ids << child.id
-        end
-      else
-        _adapter.clusters.at_depth(tile.depth+1).in_tile(tile).find_each do |child|
-          cluster = _adapter.clusters.build_from(tile.depth, child)
-          clusters << cluster
-          used_ids << child.id
-        end
+      _adapter.at_depth(tile.depth+1).in_tile(tile).find_each do |child|
+        cluster = _adapter.build_from(tile.depth, child)
+        clusters << cluster
+        used_ids << child.id
       end
 
       return [used_ids, clusters]

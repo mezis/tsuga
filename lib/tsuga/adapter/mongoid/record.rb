@@ -9,11 +9,6 @@ module Tsuga::Adapter::Mongoid
     end
 
     module ScopeMethods
-      def in_tile(tile)
-        nw = '%016x' % tile.northwest.geohash
-        se = '%016x' % tile.southeast.geohash
-        where(:geohash.gte => nw, :geohash.lte => se)
-      end
     end
   end
 end

@@ -1,3 +1,4 @@
+require 'tsuga'
 require 'tsuga/model/point'
 
 module Tsuga::Model

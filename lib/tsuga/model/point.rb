@@ -1,3 +1,5 @@
+require 'tsuga'
+
 module Tsuga::Model
 
   # Represents a position in the 0..1 x 0..1 square, modeling points on the

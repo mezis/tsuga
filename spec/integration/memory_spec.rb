@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'tsuga/adapter/sequel/test'
+require 'tsuga/adapter/memory/cluster'
 require 'integration/shared'
 
 describe 'integration' do
-  describe 'sequel adapter' do
-    let(:adapter)   { Tsuga::Adapter::Sequel::Test.clusters }
+  describe 'memory adapter' do
+    let(:adapter)   { Class.new { include Tsuga::Adapter::Memory::Cluster } }
     it_should_behave_like 'an adapter suitable for clustering'
   end
 end

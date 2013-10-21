@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'tsuga/model/point'
 require 'tsuga/model/tile'
+require 'ostruct'
 
 describe Tsuga::Model::Tile do
 

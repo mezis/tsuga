@@ -1,3 +1,6 @@
+require 'tsuga/adapter/sequel/base'
+require 'tsuga/adapter/sequel/cluster'
+require 'tsuga/adapter/sequel/record'
 require 'sequel'
 require 'sqlite3'
 require 'ostruct'
@@ -5,20 +8,24 @@ require 'ostruct'
 module Tsuga::Adapter::Sequel
   module Test
     class << self
-      def models
-        @_models ||= build_test_models
+      def clusters
+        models.clusters
       end
 
-      def build_test_models
-        # Make sure a connection exists
-        Sequel::DATABASES.first || Sequel.sqlite
+      def models
+        @_models ||= _build_test_models
+      end
 
-        cluster_model = Sequel::Model(:test_clusters)
-        record_model  = Sequel::Model(:test_records)
-        db = cluster_model.db
+      private
 
-        db.drop_table?(record_model.table_name)
-        db.create_table(record_model.table_name) do
+      # Makes sure a connection exists
+      def _db
+        @_db ||= Sequel::DATABASES.first || Sequel.sqlite
+      end
+
+      def _prepare_tables
+        _db.drop_table?(:test_records)
+        _db.create_table(:test_records) do
           primary_key :id
           BigDecimal  :geohash, :size => 21
           Float       :lat
@@ -27,8 +34,8 @@ module Tsuga::Adapter::Sequel
           index       :geohash
         end
 
-        db.drop_table?(cluster_model.table_name)
-        db.create_table(cluster_model.table_name) do
+        _db.drop_table?(:test_clusters)
+        _db.create_table(:test_clusters) do
           primary_key :id
           BigDecimal  :geohash, :size => 21
           Float       :lat
@@ -43,9 +50,22 @@ module Tsuga::Adapter::Sequel
 
           index       [:depth, :geohash]
         end
+      end
 
-        record_model.set_dataset  record_model.table_name
-        cluster_model.set_dataset cluster_model.table_name
+      def _build_test_models
+        _prepare_tables
+
+        cluster_model = Class.new(Sequel::Model(:test_clusters)) do
+          include Tsuga::Adapter::Sequel::Base
+          include Tsuga::Adapter::Sequel::Cluster
+          include Tsuga::Model::Cluster
+        end
+
+        record_model = Class.new(Sequel::Model(:test_records)) do
+          include Tsuga::Adapter::Sequel::Base
+          include Tsuga::Adapter::Sequel::Record
+          include Tsuga::Model::Record
+        end
 
         OpenStruct.new :clusters => cluster_model, :records => record_model
       end

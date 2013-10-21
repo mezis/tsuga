@@ -1,12 +1,12 @@
 require 'spec_helper'
 require 'tsuga/service/aggregator'
-require 'tsuga/adapter/memory_adapter'
+require 'tsuga/adapter/memory/cluster'
 
 describe Tsuga::Service::Aggregator do
-  let(:adapter) { Tsuga::Adapter::MemoryAdapter.new }
+  let(:adapter) { Class.new { include Tsuga::Adapter::Memory::Cluster } }
 
   def new_cluster(depth, lat, lng)
-    adapter.clusters.new.tap do |cluster|
+    adapter.new.tap do |cluster|
       cluster.depth = depth
       cluster.set_coords(lat,lng)
       cluster.weight  = 1
@@ -17,8 +17,6 @@ describe Tsuga::Service::Aggregator do
   end
 
   subject { described_class.new(clusters) }
-
-  before { adapter.clusters.delete_all }
 
   describe '#min_distance' do
     let(:clusters) { [new_cluster(2,0,0)] }

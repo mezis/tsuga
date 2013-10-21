@@ -1,3 +1,4 @@
+require 'tsuga'
 require 'tsuga/model/point'
 
 module Tsuga::Model
@@ -52,16 +53,14 @@ module Tsuga::Model
         c.children_type = other.class.name
 
         case other
-        when Record
-          c.weight      = 1
-          c.sum_lng     = other.lng
-          c.sum_lat     = other.lat
         when Cluster
           c.weight      = other.weight
           c.sum_lng     = other.sum_lng
           c.sum_lat     = other.sum_lat
         else
-          raise ArgumentError
+          c.weight      = 1
+          c.sum_lng     = other.lng
+          c.sum_lat     = other.lat
         end
 
         c.geohash # force geohash calculation

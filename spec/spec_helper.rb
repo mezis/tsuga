@@ -15,3 +15,10 @@ RSpec.configure do |config|
   #     --seed 1234
   config.order = 'random'
 end
+
+
+class ArrayWithFindEach < Array
+  def find_each(&block)
+    each(&block)
+  end
+end

@@ -10,11 +10,6 @@ module Tsuga::Adapter::Sequel
     end
 
     module Scopes
-      def in_tile(tile)
-        nw = tile.northwest.geohash
-        se = tile.southeast.geohash
-        where { geohash >= nw }.and { geohash <= se }
-      end
     end
   end
 end

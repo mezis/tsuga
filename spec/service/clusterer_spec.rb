@@ -1,17 +1,18 @@
 require 'spec_helper'
 require 'tsuga/service/clusterer'
-require 'tsuga/adapter/memory_adapter'
+require 'tsuga/adapter/memory/cluster'
+require 'ostruct'
 
 describe Tsuga::Service::Clusterer do
-  subject { described_class.new(adapter) }
-  let(:adapter) { Tsuga::Adapter::MemoryAdapter.new  }
+  subject { described_class.new(source: records, adapter: adapter) }
+  let(:adapter) { Class.new { include Tsuga::Adapter::Memory::Cluster } }
+  let(:records) { ArrayWithFindEach.new }
 
   def make_record(lat, lng)
-    adapter.records.new.set_coords(lat,lng).persist!
+    records << OpenStruct.new(lat: lat, lng: lng)
   end
 
-  before { adapter.clusters.delete_all }
-  before { adapter.records.delete_all }
+  before { adapter.delete_all }
 
   describe '#run' do
     context 'with no records' do
@@ -27,13 +28,13 @@ describe Tsuga::Service::Clusterer do
 
       it 'creates 1 cluster per depth' do
         subject.run
-        adapter.clusters.collect_ids.length.should == 17
+        adapter.collect_ids.length.should == 17
       end
 
       it 'creates clusters with the same position' do
         subject.run
         hashes = Set.new
-        adapter.clusters.find_each { |c| hashes << c.geohash }
+        adapter.find_each { |c| hashes << c.geohash }
         hashes.size.should == 1
       end
     end
@@ -48,7 +49,7 @@ describe Tsuga::Service::Clusterer do
 
       it 'creates 2 clusters per depth' do
         subject.run
-        adapter.clusters.collect_ids.length.should == 34
+        adapter.collect_ids.length.should == 34
       end
     end
 
@@ -60,14 +61,14 @@ describe Tsuga::Service::Clusterer do
       end
 
       let :toplevel_cluster do
-        id = adapter.clusters.at_depth(3).collect_ids.first
-        adapter.clusters.find_by_id(id)
+        id = adapter.at_depth(3).collect_ids.first
+        adapter.find_by_id(id)
       end
 
       let :barycenter do
         sum_lat = 0
         sum_lng = 0
-        adapter.records.find_each { |r| sum_lat += r.lat ; sum_lng += r.lng }
+        records.find_each { |r| sum_lat += r.lat ; sum_lng += r.lng }
         Tsuga::Model::Point.new.set_coords(0.1 * sum_lat, 0.1 * sum_lng)
       end
 
