@@ -12,6 +12,8 @@ describe Tsuga::Service::Aggregator do
       cluster.weight  = 1
       cluster.sum_lat = lat
       cluster.sum_lng = lng
+      cluster.ssq_lat = lat * lat
+      cluster.ssq_lng = lng * lng
       cluster.children_ids = []
     end
   end

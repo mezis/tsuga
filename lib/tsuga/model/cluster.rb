@@ -35,6 +35,8 @@ module Tsuga::Model
       self.weight  += other.weight
       self.sum_lat += other.sum_lat
       self.sum_lng += other.sum_lng
+      self.ssq_lat += other.ssq_lat
+      self.ssq_lng += other.ssq_lng
       set_coords(sum_lat/weight, sum_lng/weight)
       self.children_ids += other.children_ids
     end
@@ -57,10 +59,14 @@ module Tsuga::Model
           c.weight      = other.weight
           c.sum_lng     = other.sum_lng
           c.sum_lat     = other.sum_lat
+          c.ssq_lng     = other.ssq_lng
+          c.ssq_lat     = other.ssq_lat
         else
           c.weight      = 1
           c.sum_lng     = other.lng
           c.sum_lat     = other.lat
+          c.ssq_lng     = other.lng * other.lng
+          c.ssq_lat     = other.lat * other.lat
         end
 
         c.geohash # force geohash calculation

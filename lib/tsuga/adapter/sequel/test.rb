@@ -46,6 +46,8 @@ module Tsuga::Adapter::Sequel
           String      :children_ids # FIXME
           Float       :sum_lat
           Float       :sum_lng
+          Float       :ssq_lat
+          Float       :ssq_lng
           Integer     :weight
 
           index       [:depth, :geohash]

@@ -45,6 +45,8 @@ module Tsuga::Adapter::Mongoid
           field :children_ids
           field :sum_lat
           field :sum_lng
+          field :ssq_lat
+          field :ssq_lng
           field :weight
 
           store_in :collection => 'clusters'

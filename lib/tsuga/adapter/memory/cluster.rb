@@ -6,7 +6,7 @@ module Tsuga::Adapter::Memory
     module Fields
       attr_accessor :geohash, :lat, :lng, :depth, :parent_id
       attr_accessor :children_type, :children_ids
-      attr_accessor :sum_lat, :sum_lng, :weight
+      attr_accessor :sum_lat, :sum_lng, :ssq_lat, :ssq_lng, :weight
     end
 
     def self.included(by)
