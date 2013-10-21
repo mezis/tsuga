@@ -9,6 +9,7 @@ module Tsuga::Model
   # - :children_ids
   # - :weight (count of Record in subtree)
   # - :sum_lat, :sum_lng
+  # - :ssq_lat, :ssq_lng
   # 
   # Respond to class methods:
   # - :in_tile(Tile) (scopish, response responds to :find_each)
@@ -25,6 +26,16 @@ module Tsuga::Model
       super
       self.depth   ||= 1
       self.geohash ||= 0xC000000000000000 # equator/greenwich
+    end
+
+    # latitude deviation in cluster
+    def dlat
+      Math.sqrt(((sum_lat/weight)**2 - ssq_lat/weight).abs)
+    end
+
+    # longitude deviation in cluster
+    def dlng
+      Math.sqrt(((sum_lng/weight)**2 - ssq_lng/weight).abs)
     end
 
 
