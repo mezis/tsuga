@@ -1,0 +1,27 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  lat: 1.5
+  lng: 1.5
+  geohash: 9.99
+  depth: 1
+  parent_id: 1
+  children_type: MyString
+  children_ids: MyString
+  sum_lat: 1.5
+  sum_lng: 1.5
+  weight: 1
+
+two:
+  name: MyString
+  lat: 1.5
+  lng: 1.5
+  geohash: 9.99
+  depth: 1
+  parent_id: 1
+  children_type: MyString
+  children_ids: MyString
+  sum_lat: 1.5
+  sum_lng: 1.5
+  weight: 1

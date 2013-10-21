@@ -9,6 +9,8 @@ gem 'pg'
 # templates
 gem 'haml-rails'
 
+# load .env
+gem 'dotenv-rails'
 
 # 
 # Frontend
@@ -25,9 +27,11 @@ gem 'coffee-rails', '~> 4.0.0'
 
 # styling
 gem 'compass-rails'
-gem 'bootstrap-sass'
+gem 'bootstrap-sass', git: 'https://github.com/thomas-mcdonald/bootstrap-sass.git'
 gem "font-awesome-rails"
 
+# maps
+gem 'gmaps4rails'
 
 # See https://github.com/sstephenson/execjs#readme for more supported runtimes
 # gem 'therubyracer', platforms: :ruby

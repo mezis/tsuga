@@ -9,5 +9,26 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require_self
- *= require_tree .
+ *= require font-awesome
+ *= require_tree ./application
  */
+@import application/variables
+@import bootstrap
+
+// This needs to be between bootstrap and bootstrap-responsive
+body
+  position:         relative
+
+html, body
+  height:           100%
+
+#map-container
+  position:         absolute
+  padding-top:      $menu-height
+  width:            100%
+  height:           100%
+
+#map-canvas
+  width:            100%
+  height:           100%
+  background-color: #aaa
