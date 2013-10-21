@@ -10,6 +10,7 @@ require 'pry'
 require 'ostruct'
 require 'tsuga/adapter/memory/test'
 require 'tsuga/adapter/sequel/test'
+require 'tsuga/adapter/active_record/test'
 require 'tsuga/adapter/mongoid/test'
 require 'tsuga/service/clusterer'
 
@@ -22,9 +23,13 @@ ADAPTER_NAME = ENV.fetch('ADAPTER','mysql')
 case ADAPTER_NAME
 when /memory/i
   Adapter = Tsuga::Adapter::Memory::Test
-when /mysql/i
+when /sequel/i
   DB      = Sequel.connect 'mysql2://root@localhost/tsuga'
   Adapter = Tsuga::Adapter::Sequel::Test
+when /ar/i
+  ActiveRecord::Base.establish_connection(adapter:'mysql2', username:'root', host:'localhost', database:'tsuga')
+  ActiveRecord::Base.connection
+  Adapter = Tsuga::Adapter::ActiveRecord::Test
 when /mongo/i
   Adapter = Tsuga::Adapter::Mongoid::Test
 else

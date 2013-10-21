@@ -177,8 +177,14 @@ module Tsuga::Model
     include Fields
     include PointTrait
 
-    def initialize(geohash=nil)
-      self.geohash = geohash
+    def initialize(geohash: nil, lat: nil, lng: nil)
+      if geohash
+        self.geohash = geohash
+      else
+        self.lat = lat
+        self.lng = lng
+        self.geohash
+      end
     end
   end
 end
