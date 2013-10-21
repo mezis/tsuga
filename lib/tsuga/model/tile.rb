@@ -53,6 +53,8 @@ module Tsuga::Model
           t.depth = depth
           t.southwest = Point.new(geohash: point.geohash.to_i & lo_mask)
           t.northeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
+          t.southwest.lat
+          t.northeast.lat
         end
       end
 

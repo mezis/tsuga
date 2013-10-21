@@ -33,18 +33,18 @@ module Tsuga::Adapter::ActiveRecord
       def in_tile(tile)
         sw = tile.southwest.geohash.to_s(16)
         ne = tile.northeast.geohash.to_s(16)
-        where(depth: tile.depth).where('geohash >= ? AND geohash <= ?', sw, ne)
+        where('geohash >= ? AND geohash <= ?', sw, ne)
       end
 
       def in_tiles(tiles)
         sql_clause = (['(geohash >= ? AND geohash <= ?)'] * tiles.length).join(' OR ')
         boundaries = tiles.map { |t| [t.southwest.geohash.to_s(16), t.northeast.geohash.to_s(16)] }.flatten
-        where(depth: tiles.first.depth).where(sql_clause, *boundaries)
+        where(sql_clause, *boundaries)
       end
 
       def in_viewport(sw:nil, ne:nil, depth:nil)
         tiles = Tsuga::Model::Tile.enclosing_viewport(point_sw: sw, point_ne: ne, depth: depth)
-        in_tiles(tiles)
+        at_depth(tiles.first.depth).in_tiles(tiles)
       end
     end
   end

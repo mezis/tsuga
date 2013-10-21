@@ -51,6 +51,9 @@ module Tsuga::Service
           point = _adapter.find_by_id(points_ids.first)
           tile = Tile.including(point, :depth => depth)
           used_ids, clusters = _build_clusters(tile)
+          if used_ids.empty?
+            raise 'invariant broken'
+          end
           points_ids -= used_ids
           _assemble_clusters(clusters)
 
