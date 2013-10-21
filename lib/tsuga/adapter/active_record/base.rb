@@ -1,16 +1,12 @@
 require 'tsuga/errors'
 require 'tsuga/adapter'
-require 'sequel'
+require 'active_record'
 require 'delegate'
 
 module Tsuga::Adapter::ActiveRecord
   module Base
     def self.included(by)
       by.extend DatasetMethods
-    end
-
-    def id
-      @_id ||= super
     end
 
     def persist!
@@ -20,17 +16,16 @@ module Tsuga::Adapter::ActiveRecord
     # TODO: the geohash-conversion is shared with the Mongoid adapter. Factor this out.
     def geohash
       value = super
-      value.kind_of?(Float) ? value.to_i : value
+      value.kind_of?(String) ? value.to_i(16) : value
     end
 
     def geohash=(value)
-      value = value.to_f if value.kind_of?(Integer)
+      value = '%016x' % value if value.kind_of?(Integer)
       super(value)
     end
 
     module DatasetMethods
       def mass_create(new_records)
-        # require 'pry' ; require 'pry-nav' ; binding.pry
         return if new_records.empty?
         attributes = new_records.map(&:attributes)
         keys = attributes.first.keys - ['id']
