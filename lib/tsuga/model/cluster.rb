@@ -38,6 +38,18 @@ module Tsuga::Model
       Math.sqrt(((sum_lng/weight)**2 - ssq_lng/weight).abs)
     end
 
+    def geohash=(*args)
+      super(*args)
+      _update_geohash_prefix
+      geohash
+    end
+
+    def depth=(value)
+      super(value)
+      _update_geohash_prefix
+      depth
+    end
+
 
     def merge(other)
       raise ArgumentError, 'not same depth'  unless depth == other.depth
@@ -87,6 +99,18 @@ module Tsuga::Model
 
     def self.included(by)
       by.extend(ClassMethods)
+    end
+  
+
+    private
+
+
+    def _update_geohash_prefix
+      if geohash && depth
+        self.geohash_prefix = geohash >> (64 - 2*depth)
+      else
+        self.geohash_prefix = nil
+      end
     end
   end
 end

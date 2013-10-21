@@ -49,7 +49,7 @@ module Tsuga::Service
         while points_ids.any?
           log "... #{points_ids.size} children left"
           point = _adapter.find_by_id(points_ids.first)
-          tile = Tile.including(point, :depth => depth)
+          tile = Tile.including(point, depth: depth)
           used_ids, clusters = _build_clusters(tile)
           if used_ids.empty?
             raise 'invariant broken'
@@ -80,7 +80,7 @@ module Tsuga::Service
       used_ids = []
       clusters = []
 
-      _adapter.at_depth(tile.depth+1).in_tile(tile).find_each do |child|
+      _adapter.in_tile(*tile.children).find_each do |child|
         cluster = _adapter.build_from(tile.depth, child)
         clusters << cluster
         used_ids << child.id

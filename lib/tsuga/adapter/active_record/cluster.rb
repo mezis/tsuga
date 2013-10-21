@@ -30,22 +30,17 @@ module Tsuga::Adapter::ActiveRecord
       end
 
       # FIXME: this also is redundant with the mongoid adapter implementation
-      def in_tile(tile)
-        sw = tile.southwest.geohash.to_s(16)
-        ne = tile.northeast.geohash.to_s(16)
-        where('geohash >= ? AND geohash <= ?', sw, ne)
-      end
-
-      def in_tiles(tiles)
-        sql_clause = (['(geohash >= ? AND geohash <= ?)'] * tiles.length).join(' OR ')
-        boundaries = tiles.map { |t| [t.southwest.geohash.to_s(16), t.northeast.geohash.to_s(16)] }.flatten
-        where(sql_clause, *boundaries)
+      def in_tile(*tiles)
+        depths = tiles.map(&:depth).uniq
+        raise ArgumentError, 'all tile must be at same depth' if depths.length > 1
+        where(depth: depths.first, geohash_prefix: tiles.map(&:prefix))
       end
 
       def in_viewport(sw:nil, ne:nil, depth:nil)
         tiles = Tsuga::Model::Tile.enclosing_viewport(point_sw: sw, point_ne: ne, depth: depth)
-        at_depth(tiles.first.depth).in_tiles(tiles)
+        in_tile(*tiles)
       end
     end
   end
 end
+

@@ -37,6 +37,7 @@ module Tsuga::Adapter::Mongoid
           include Mongoid::Document
 
           field :geohash
+          field :geohash_prefix
           field :lat
           field :lng
           field :depth
@@ -50,7 +51,7 @@ module Tsuga::Adapter::Mongoid
           field :weight
 
           store_in :collection => 'clusters'
-          index depth:1, geohash:1
+          index depth:1, geohash_prefix:1
 
           include Tsuga::Adapter::Mongoid::Cluster
         end

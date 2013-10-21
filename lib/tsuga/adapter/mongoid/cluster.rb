@@ -16,10 +16,11 @@ module Tsuga::Adapter::Mongoid
         where(:depth => depth)
       end
 
-      def in_tile(tile)
-        sw = '%016x' % tile.southwest.geohash
-        ne = '%016x' % tile.northeast.geohash
-        where(:geohash.gte => sw, :geohash.lte => ne)
+      def in_tile(*tiles)
+        # where(:geohash.gte => sw, :geohash.lte => ne)
+        depths = tiles.map(&:depth).uniq
+        raise ArgumentError, 'all tiles must be at same depth' if depths.length > 1
+        where(:depth => depths.first, :geohash_prefix.in => tiles.map(&:prefix))
       end
     end
   end

@@ -7,6 +7,7 @@ module Tsuga::Adapter::Memory
       attr_accessor :geohash, :lat, :lng, :depth, :parent_id
       attr_accessor :children_type, :children_ids
       attr_accessor :sum_lat, :sum_lng, :ssq_lat, :ssq_lng, :weight
+      attr_accessor :geohash_prefix
     end
 
     def self.included(by)
@@ -22,7 +23,7 @@ module Tsuga::Adapter::Memory
       end
 
       def in_tile(*tiles)
-        scoped(lambda { |r| tiles.any? { |t| t.contains?(r) } })
+        scoped(lambda { |r| tiles.any? { |t| (t.depth == r.depth) && t.contains?(r) } })
       end
     end
   end

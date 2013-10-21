@@ -42,6 +42,7 @@ module Tsuga::Adapter::ActiveRecord
         _db.create_table(:test_clusters) do |t|
           t.integer  :depth
           t.string   :geohash,        limit:16
+          t.string   :geohash_prefix, limit:16
           t.float    :lat
           t.float    :lng
           t.integer  :parent_id
@@ -53,7 +54,8 @@ module Tsuga::Adapter::ActiveRecord
           t.float    :ssq_lng
           t.integer  :weight
         end
-        _db.add_index :test_clusters, [:depth, :geohash]
+
+        _db.add_index :test_clusters, [:depth, :geohash_prefix]
       end
 
       def _build_test_models

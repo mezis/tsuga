@@ -55,7 +55,7 @@ module Tsuga::Service
       @min_distance ||= begin
         depth = _clusters.first.depth
         point = Tsuga::Model::Point.new.set_coords(0,0)
-        tile  = Tsuga::Model::Tile.including(point, :depth => depth)
+        tile  = Tsuga::Model::Tile.including(point, depth: depth)
         (tile.southwest & tile.northeast) * MIN_DISTANCE_RATIO
       end
     end

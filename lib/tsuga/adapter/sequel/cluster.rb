@@ -26,13 +26,15 @@ module Tsuga::Adapter::Sequel
 
     module Scopes
       def at_depth(depth)
-        where(:depth => depth)
+        where(depth: depth)
       end
 
-      def in_tile(tile)
-        sw = tile.southwest.geohash
-        ne = tile.northeast.geohash
-        where { geohash >= sw }.and { geohash <= ne }
+      def in_tile(*tiles)
+        depths = tiles.map(&:depth).uniq
+        if depths.length > 1
+          raise ArgumentError, 'all tile must be at same depth'
+        end
+        where(depth: depths.first, geohash_prefix: tiles.map(&:prefix))
       end
     end
   end

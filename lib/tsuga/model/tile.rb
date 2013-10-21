@@ -13,7 +13,7 @@ module Tsuga::Model
     WIGGLE_FACTOR = 1e-4
 
     def contains?(point)
-      (point.geohash >= southwest.geohash) && (point.geohash <= northeast.geohash)
+      _prefix_for(point) == prefix
     end
 
     def dlat(count = 1)
@@ -24,11 +24,24 @@ module Tsuga::Model
       (northeast.lng - southwest.lng) * (count + WIGGLE_FACTOR)
     end
 
-    def neighbours
-      raise NotImplementedError
+    def prefix
+      @_prefix ||= _prefix_for(southwest)
+    end
+
+    # return the 4 children of this tile
+    def children
+      geohash = southwest.geohash
+      new_depth = depth + 1
+      [0b00, 0b01, 0b10, 0b11].map { |quadrant|
+        geohash | (quadrant << (64 - new_depth * 2))
+      }.map { |hash|
+        # TODO: this cound be more efficiently written using a depth/southwest constructor
+        self.class.including(Point.new(geohash: hash), depth: new_depth)
+      }
     end
 
     # return a neighouring tile offset in tile increments
+    # TODO: this could be implemented using bit logic
     def neighbour(lat:0, lng:0)
       new_point = Point.new(
         lat: southwest.lat + dlat(lat),
@@ -52,6 +65,7 @@ module Tsuga::Model
         new.tap do |t|
           t.depth = depth
           t.southwest = Point.new(geohash: point.geohash.to_i & lo_mask)
+          # TODO: calculating northeast can probably be done lazily
           t.northeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
           t.southwest.lat
           t.northeast.lat
@@ -92,5 +106,12 @@ module Tsuga::Model
       end
     end
     extend ClassMethods
+
+    private
+
+    # geohash prefix of the point at this tile's depth
+    def _prefix_for(point)
+      point.geohash >> (64 - 2*depth)
+    end
   end
 end
