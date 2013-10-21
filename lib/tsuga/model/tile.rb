@@ -10,12 +10,30 @@ module Tsuga::Model
     # in the geohash.
     attr_accessor :depth
 
+    WIGGLE_FACTOR = 1e-4
+
     def contains?(point)
       (point.geohash >= southwest.geohash) && (point.geohash <= northeast.geohash)
     end
 
+    def dlat(count = 1)
+      (northeast.lat - southwest.lat) * (count + WIGGLE_FACTOR)
+    end
+
+    def dlng(count = 1)
+      (northeast.lng - southwest.lng) * (count + WIGGLE_FACTOR)
+    end
+
     def neighbours
       raise NotImplementedError
+    end
+
+    # return a neighouring tile offset in tile increments
+    def neighbour(lat:0, lng:0)
+      new_point = Point.new(
+        lat: southwest.lat + dlat(lat),
+        lng: southwest.lng + dlng(lng))
+      Tile.including(new_point, depth: depth)
     end
 
     module ClassMethods
@@ -38,13 +56,37 @@ module Tsuga::Model
         end
       end
 
-      # Return a Tile instance that encloses both corner points
+      # Return an array of Tile instances that encloses both corner points
       # FIXME: this is untested
-      def enclosing_viewport(point_nw, point_se)
-        0.upto(31) do |depth|
-          tile = including(point_nw)
-          break tile if tile.contains?(point_se)
+      def enclosing_viewport(point_ne:nil, point_sw:nil, depth:nil)
+        # $stderr.puts "aiming to enclose:"
+        # $stderr.puts "%.2f %.2f -> %.2f %.2f" % [point_ne.lat, point_ne.lng, point_sw.lat, point_sw.lng]
+        # $stderr.flush
+
+        tiles = []
+        first_tile = including(point_sw, depth:depth)
+
+        offset_lat = 0
+        loop do
+          offset_lng = 0
+          loop do 
+            # $stderr.puts("offset: #{offset_lat} #{offset_lng}")
+            # $stderr.flush
+            new_tile = first_tile.neighbour(lat:offset_lat, lng:offset_lng)
+            tiles << new_tile
+
+            # $stderr.puts "%.2f %.2f -> %.2f %.2f" % [new_tile.southwest.lat, new_tile.southwest.lng, new_tile.northeast.lat, new_tile.northeast.lng]
+            # $stderr.flush
+
+            offset_lng += 1
+            break if tiles.last.northeast.lng >= point_ne.lng
+          end
+          break if tiles.last.northeast.lat >= point_ne.lat
+          offset_lat += 1
+          offset_lng = 0
         end
+
+        return tiles
       end
     end
     extend ClassMethods
