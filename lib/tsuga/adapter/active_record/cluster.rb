@@ -29,14 +29,22 @@ module Tsuga::Adapter::ActiveRecord
         where(:depth => depth)
       end
 
+      # FIXME: this also is redundant with the mongoid adapter implementation
       def in_tile(tile)
         sw = tile.southwest.geohash.to_s(16)
         ne = tile.northeast.geohash.to_s(16)
         where(depth: tile.depth).where('geohash >= ? AND geohash <= ?', sw, ne)
       end
 
-      def in_viewport(point_nw, point_se)
-        in_tile(Tile.enclosing_viewport(point_nw, point_se))
+      def in_tiles(tiles)
+        sql_clause = (['(geohash >= ? AND geohash <= ?)'] * tiles.length).join(' OR ')
+        boundaries = tiles.map { |t| [t.southwest.geohash.to_s(16), t.northeast.geohash.to_s(16)] }.flatten
+        where(depth: tiles.first.depth).where(sql_clause, *boundaries)
+      end
+
+      def in_viewport(sw:nil, ne:nil, depth:nil)
+        tiles = Tsuga::Model::Tile.enclosing_viewport(point_sw: sw, point_ne: ne, depth: depth)
+        in_tiles(tiles)
       end
     end
   end
