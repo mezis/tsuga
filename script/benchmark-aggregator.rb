@@ -14,12 +14,12 @@ ENV['CPUPROFILE_FREQUENCY'] ||= '500'
 
 case ENV['ADAPTER']
 when /memory/i
-  Adapter = Tsuga::Adapter::MemoryAdapter.new
+  Adapter = Tsuga::Adapter::Memory::Test.clusters
 when /mysql/i
   DB = Sequel.connect 'mysql2://root@localhost/tsuga'
-  Adapter = Tsuga::Adapter::SequelAdapter.test_adapter
+  Adapter = Tsuga::Adapter::Sequel::Test.clusters
 when /mongo/i
-  Adapter = Tsuga::Adapter::MongoidAdapter.test_adapter
+  Adapter = Tsuga::Adapter::Mongoid::Test.clusters
 else
   puts 'specify an ADAPTER'
   exit 1
@@ -29,7 +29,7 @@ RAW_PROFILE = "tmp/profile#{ENV['ADAPTER']}"
 PDF_PROFILE = "#{RAW_PROFILE}.pdf"
 
 def new_cluster(depth, lat, lng)
-  Adapter.clusters.new.tap do |cluster|
+  Cluster.new.tap do |cluster|
     cluster.depth = depth
     cluster.set_coords(lat,lng)
     cluster.weight  = 1
@@ -44,7 +44,7 @@ end
 PerfTools::CpuProfiler.start(RAW_PROFILE) do
   begin
     10.times do |idx|
-      Adapter.clusters.delete_all
+      Cluster.delete_all
       lat_max = 45 - 1e-4
       lng_max = 90 - 1e-4
       clusters = (1..COUNT).map { new_cluster(2, rand*lat_max, rand*lng_max) }

@@ -5,6 +5,8 @@ require 'mongoid'
 module Tsuga::Adapter::Mongoid
   module Cluster
     def self.included(by)
+      by.send :include, Base
+      by.send :include, Tsuga::Model::Cluster
       by.extend ScopeMethods
     end
 

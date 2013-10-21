@@ -5,6 +5,8 @@ require 'mongoid'
 module Tsuga::Adapter::Mongoid
   module Record
     def self.included(by)
+      by.send :include, Base
+      by.send :include, Tsuga::Model::Record
       by.extend ScopeMethods
     end
 

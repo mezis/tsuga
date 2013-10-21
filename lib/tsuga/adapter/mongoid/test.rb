@@ -50,9 +50,7 @@ module Tsuga::Adapter::Mongoid
           store_in :collection => 'clusters'
           index depth:1, geohash:1
 
-          include Tsuga::Adapter::Mongoid::Base
           include Tsuga::Adapter::Mongoid::Cluster
-          include Tsuga::Model::Cluster
         end
       end
 
@@ -68,9 +66,7 @@ module Tsuga::Adapter::Mongoid
           store_in :collection => 'records'
           index geohash:1
 
-          include Tsuga::Adapter::Mongoid::Base
           include Tsuga::Adapter::Mongoid::Record
-          include Tsuga::Model::Record
         end
       end
     end

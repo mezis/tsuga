@@ -56,15 +56,11 @@ module Tsuga::Adapter::Sequel
         _prepare_tables
 
         cluster_model = Class.new(Sequel::Model(:test_clusters)) do
-          include Tsuga::Adapter::Sequel::Base
           include Tsuga::Adapter::Sequel::Cluster
-          include Tsuga::Model::Cluster
         end
 
         record_model = Class.new(Sequel::Model(:test_records)) do
-          include Tsuga::Adapter::Sequel::Base
           include Tsuga::Adapter::Sequel::Record
-          include Tsuga::Model::Record
         end
 
         OpenStruct.new :clusters => cluster_model, :records => record_model
