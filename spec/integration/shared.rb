@@ -1,3 +1,6 @@
+require 'tsuga/service/clusterer'
+require 'tsuga/model/point'
+
 shared_examples_for 'an adapter suitable for clustering' do
   let(:clusterer) { Tsuga::Service::Clusterer.new(source: records, adapter: adapter) }
   let(:records) { ArrayWithFindEach.new }
