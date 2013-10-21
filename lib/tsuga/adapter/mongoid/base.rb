@@ -24,6 +24,10 @@ module Tsuga::Adapter::Mongoid
 
 
     module ScopeMethods
+      def mass_create(new_records)
+        collection.insert(new_records.map(&:attributes))
+      end
+
       def find_by_id(id)
         find(id)
       end

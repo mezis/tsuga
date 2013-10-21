@@ -32,6 +32,10 @@ module Tsuga::Adapter::Memory
 
 
     module ClassMethods
+      def mass_create(records)
+        records.each(&:persist!)
+      end
+
       # FIXME: not thread safe. not sure we care, either.
       def generate_id
         @_last_id ||= 0

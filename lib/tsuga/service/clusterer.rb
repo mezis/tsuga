@@ -57,8 +57,7 @@ module Tsuga::Service
           _assemble_clusters(clusters)
 
           # TODO: use a save queue, only run saves if > 100 clusters to write
-          clusters.each { |c| c.persist! }
-          # _adapter.dataset.multi_insert(clusters.map(&:to_hash))
+          _adapter.mass_create(clusters)
         end
 
         # TODO: fix parent_id in tree

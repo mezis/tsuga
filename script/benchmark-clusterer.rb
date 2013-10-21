@@ -6,6 +6,7 @@ require 'benchmark'
 require 'zlib'
 require 'yaml'
 require 'csv'
+require 'pry'
 require 'ostruct'
 require 'tsuga/adapter/memory/test'
 require 'tsuga/adapter/sequel/test'
@@ -58,12 +59,23 @@ puts " #{Records.count} records created"
 
 puts 'profiling...'
 PerfTools::CpuProfiler.start(RAW_PROFILE) do
-  Tsuga::Service::Clusterer.new(source: Records, adapter: Clusters).run
+  begin
+    Tsuga::Service::Clusterer.new(source: Records, adapter: Clusters).run
+  rescue Exception => e
+    puts "caught #{e.class.name} (#{e.message})"
+    if ENV['DEBUG']
+      binding.pry
+    else
+      puts "set DEBUG next time to inspect"
+    end
+    $failure = true
+  end
 end
 
-system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"
-system "open #{PDF_PROFILE}"
-
+unless $failure
+  system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"
+  system "open #{PDF_PROFILE}"
+end
 
 __END__
 

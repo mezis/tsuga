@@ -18,6 +18,10 @@ module Tsuga::Adapter::Sequel
     end
 
     module DatasetMethods
+      def mass_create(new_records)
+        multi_insert(new_records.map(&:to_hash))
+      end
+
       def find_by_id(id)
         self[id]
       end
