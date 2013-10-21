@@ -4,13 +4,13 @@ require 'tsuga/adapter/sequel/record'
 require 'sequel'
 require 'sqlite3'
 require 'ostruct'
+require 'forwardable'
 
 module Tsuga::Adapter::Sequel
   module Test
     class << self
-      def clusters
-        models.clusters
-      end
+      extend Forwardable
+      delegate [:records, :clusters] => :models
 
       def models
         @_models ||= _build_test_models

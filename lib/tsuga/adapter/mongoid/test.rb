@@ -3,13 +3,13 @@ require 'tsuga/adapter/mongoid/cluster'
 require 'tsuga/adapter/mongoid/record'
 require 'mongoid'
 require 'ostruct'
+require 'forwardable'
 
 module Tsuga::Adapter::Mongoid
   module Test
     class << self
-      def clusters
-        models.clusters
-      end
+      extend Forwardable
+      delegate [:records, :clusters] => :models
 
       def models
         @_models ||= _build_test_models

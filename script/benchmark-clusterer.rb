@@ -7,25 +7,25 @@ require 'zlib'
 require 'yaml'
 require 'csv'
 require 'ostruct'
-require 'tsuga/adapter/memory_adapter'
-require 'tsuga/adapter/sequel_adapter'
-require 'tsuga/adapter/mongoid_adapter'
+require 'tsuga/adapter/memory/test'
+require 'tsuga/adapter/sequel/test'
+require 'tsuga/adapter/mongoid/test'
 require 'tsuga/service/clusterer'
 
 ENV['CPUPROFILE_FREQUENCY'] ||= '500'
 
-LIMIT = ENV.fetch('LIMIT', '200').to_i
-SOURCE = ENV.fetch('SOURCE', 'doc/barcelona.csv.gz')
+LIMIT        = ENV.fetch('LIMIT', '200').to_i
+SOURCE       = ENV.fetch('SOURCE', 'doc/barcelona.csv.gz')
 ADAPTER_NAME = ENV.fetch('ADAPTER','mysql')
 
 case ADAPTER_NAME
 when /memory/i
-  Adapter = Tsuga::Adapter::MemoryAdapter.new
+  Adapter = Tsuga::Adapter::Memory::Test
 when /mysql/i
-  DB = Sequel.connect 'mysql2://root@localhost/tsuga'
-  Adapter = Tsuga::Adapter::SequelAdapter.test_adapter
+  DB      = Sequel.connect 'mysql2://root@localhost/tsuga'
+  Adapter = Tsuga::Adapter::Sequel::Test
 when /mongo/i
-  Adapter = Tsuga::Adapter::MongoidAdapter.test_adapter
+  Adapter = Tsuga::Adapter::Mongoid::Test
 else
   puts 'specify an ADAPTER'
   exit 1
@@ -34,7 +34,7 @@ end
 Clusters = Adapter.clusters
 Records  = Adapter.records
 
-RAW_PROFILE = "tmp/profile#{ENV['ADAPTER']}"
+RAW_PROFILE = "tmp/profile_#{ENV['ADAPTER']}"
 PDF_PROFILE = "#{RAW_PROFILE}.pdf"
 
 puts 'loading records...'
@@ -58,7 +58,7 @@ puts " #{Records.count} records created"
 
 puts 'profiling...'
 PerfTools::CpuProfiler.start(RAW_PROFILE) do
-  Tsuga::Service::Clusterer.new(Adapter).run
+  Tsuga::Service::Clusterer.new(source: Records, adapter: Clusters).run
 end
 
 system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"

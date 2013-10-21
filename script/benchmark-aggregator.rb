@@ -2,9 +2,9 @@
 require 'bundler/setup'
 require 'perftools'
 require 'benchmark'
-require 'tsuga/adapter/memory_adapter'
-require 'tsuga/adapter/sequel_adapter'
-require 'tsuga/adapter/mongoid_adapter'
+require 'tsuga/adapter/memory/test'
+require 'tsuga/adapter/sequel/test'
+require 'tsuga/adapter/mongoid/test'
 require 'tsuga/service/aggregator'
 require 'pry'
 require 'pry-nav'
@@ -14,18 +14,18 @@ ENV['CPUPROFILE_FREQUENCY'] ||= '500'
 
 case ENV['ADAPTER']
 when /memory/i
-  Adapter = Tsuga::Adapter::Memory::Test.clusters
+  Cluster = Tsuga::Adapter::Memory::Test.clusters
 when /mysql/i
   DB = Sequel.connect 'mysql2://root@localhost/tsuga'
-  Adapter = Tsuga::Adapter::Sequel::Test.clusters
+  Cluster = Tsuga::Adapter::Sequel::Test.clusters
 when /mongo/i
-  Adapter = Tsuga::Adapter::Mongoid::Test.clusters
+  Cluster = Tsuga::Adapter::Mongoid::Test.clusters
 else
   puts 'specify an ADAPTER'
   exit 1
 end
 
-RAW_PROFILE = "tmp/profile#{ENV['ADAPTER']}"
+RAW_PROFILE = "tmp/profile_#{ENV['ADAPTER']}"
 PDF_PROFILE = "#{RAW_PROFILE}.pdf"
 
 def new_cluster(depth, lat, lng)
@@ -36,7 +36,7 @@ def new_cluster(depth, lat, lng)
     cluster.sum_lat = lat
     cluster.sum_lng = lng
     cluster.children_ids = []
-    cluster.persist!
+    # cluster.persist!
   end
 end
 
@@ -61,8 +61,11 @@ PerfTools::CpuProfiler.start(RAW_PROFILE) do
     else
       puts "set DEBUG next time to inspect"
     end
+    $failure = true
   end
 end
 
-system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"
-system "open #{PDF_PROFILE}"
+unless $failure
+  system "pprof.rb --pdf #{RAW_PROFILE} > #{PDF_PROFILE}"
+  system "open #{PDF_PROFILE}"
+end
