@@ -66,6 +66,7 @@ puts 'profiling...'
 PerfTools::CpuProfiler.start(RAW_PROFILE) do
   begin
     Tsuga::Service::Clusterer.new(source: Records, adapter: Clusters).run
+    puts "#{Clusters.count} clusters created"
   rescue Exception => e
     puts "caught #{e.class.name} (#{e.message})"
     if ENV['DEBUG']
