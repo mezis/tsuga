@@ -20,15 +20,18 @@ describe Tsuga::Model::Tile do
         depth.value = 18
       end
 
-      it 'calculates northwest' do
-        result.northwest.should =~ point
+      it 'calculates southwest' do
+        result.southwest.should =~ point
       end
 
-      it 'calculates southeast' do
-        result.southeast.lng.should be_within(1e-6).of(360.0 * (2 ** -18))
-        result.southeast.lat.should be_within(1e-6).of(180.0 * (2 ** -18))
+      it 'calculates northeast' do
+        result.northeast.lng.should be_within(1e-6).of(360.0 * (2 ** -18))
+        result.northeast.lat.should be_within(1e-6).of(180.0 * (2 ** -18))
       end
 
+      it 'respects geohash ordering' do
+        result.southwest.geohash.should < result.northeast.geohash
+      end
     end
   end
 

@@ -4,14 +4,14 @@ require 'tsuga/model/point'
 module Tsuga::Model
   class Tile
     # corner points
-    attr_accessor :northwest, :southeast
+    attr_accessor :southwest, :northeast
 
     # level in the tile tree, also number of relevant high bits
     # in the geohash.
     attr_accessor :depth
 
     def contains?(point)
-      (point.geohash >= northwest.geohash) && (point.geohash <= southeast.geohash)
+      (point.geohash >= southwest.geohash) && (point.geohash <= northeast.geohash)
     end
 
     def neighbours
@@ -25,7 +25,7 @@ module Tsuga::Model
       # - :depth
       def including(point, options={})
         depth = options[:depth]
-        raise ArgumentError, 'bad depth' unless (1..31).include?(depth)
+        raise ArgumentError, 'bad depth' unless (0..31).include?(depth)
 
         bits  = 2 * depth
         lo_mask = ((1<<bits) - 1) << (64-bits) # mask for high bits
@@ -33,8 +33,8 @@ module Tsuga::Model
 
         new.tap do |t|
           t.depth = depth
-          t.northwest = Point.new(geohash: point.geohash.to_i & lo_mask)
-          t.southeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
+          t.southwest = Point.new(geohash: point.geohash.to_i & lo_mask)
+          t.northeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
         end
       end
 

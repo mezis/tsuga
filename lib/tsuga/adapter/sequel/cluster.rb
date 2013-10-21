@@ -1,4 +1,5 @@
 require 'tsuga/model/cluster'
+require 'tsuga/model/tile'
 require 'tsuga/adapter/sequel/base'
 
 module Tsuga::Adapter::Sequel
@@ -29,13 +30,9 @@ module Tsuga::Adapter::Sequel
       end
 
       def in_tile(tile)
-        nw = tile.northwest.geohash
-        se = tile.southeast.geohash
-        where { geohash >= nw }.and { geohash <= se }
-      end
-
-      def in_viewport(point_nw, point_se)
-        in_tile(Tile.enclosing_viewport(point_nw, point_se))
+        sw = tile.southwest.geohash
+        ne = tile.northeast.geohash
+        where { geohash >= sw }.and { geohash <= ne }
       end
     end
   end

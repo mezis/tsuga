@@ -1,3 +1,4 @@
+require 'tsuga/model/tile'
 require 'tsuga/model/cluster'
 require 'tsuga/adapter/mongoid/base'
 require 'mongoid'
@@ -16,13 +17,9 @@ module Tsuga::Adapter::Mongoid
       end
 
       def in_tile(tile)
-        nw = '%016x' % tile.northwest.geohash
-        se = '%016x' % tile.southeast.geohash
-        where(:geohash.gte => nw, :geohash.lte => se)
-      end
-
-      def in_viewport(point_nw, point_se)
-        in_tile(Tile.enclosing_viewport(point_nw, point_se))
+        sw = '%016x' % tile.southwest.geohash
+        ne = '%016x' % tile.northeast.geohash
+        where(:geohash.gte => sw, :geohash.lte => ne)
       end
     end
   end

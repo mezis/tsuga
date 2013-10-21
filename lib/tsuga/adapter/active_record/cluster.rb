@@ -1,4 +1,5 @@
 require 'tsuga/model/cluster'
+require 'tsuga/model/tile'
 require 'tsuga/adapter/active_record/base'
 
 module Tsuga::Adapter::ActiveRecord
@@ -29,9 +30,9 @@ module Tsuga::Adapter::ActiveRecord
       end
 
       def in_tile(tile)
-        nw = tile.northwest.geohash
-        se = tile.southeast.geohash
-        where('geohash >= ? AND geohash <= ?', nw, se)
+        sw = tile.southwest.geohash.to_s(16)
+        ne = tile.northeast.geohash.to_s(16)
+        where(depth: tile.depth).where('geohash >= ? AND geohash <= ?', sw, ne)
       end
 
       def in_viewport(point_nw, point_se)
