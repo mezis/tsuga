@@ -3,8 +3,6 @@ require 'tsuga/service/aggregator'
 
 module Tsuga::Service
   class Clusterer
-    MAX_DEPTH = 19
-    MIN_DEPTH = 3
     Tile = Tsuga::Model::Tile
 
     attr_reader :_adapter, :_source
@@ -20,11 +18,11 @@ module Tsuga::Service
 
       # create lowest-level clusters
       _source.find_each do |record|
-        _adapter.build_from(MAX_DEPTH, record).persist!
+        _adapter.build_from(Tsuga::MAX_DEPTH, record).persist!
       end
 
       # for all depths N from 18 to 3
-      (MAX_DEPTH-1).downto(MIN_DEPTH) do |depth|
+      (Tsuga::MAX_DEPTH-1).downto(Tsuga::MIN_DEPTH) do |depth|
         log "at depth #{depth}"
 
         # find children (clusters or records) from deeper level, N+!
