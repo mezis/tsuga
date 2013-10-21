@@ -37,6 +37,15 @@ module Tsuga::Model
           t.southeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
         end
       end
+
+      # Return a Tile instance that encloses both corner points
+      # FIXME: this is untested
+      def enclosing_viewport(point_nw, point_se)
+        0.upto(31) do |depth|
+          tile = including(point_nw)
+          break tile if tile.contains?(point_se)
+        end
+      end
     end
     extend ClassMethods
   end

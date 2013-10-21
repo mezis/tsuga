@@ -20,6 +20,10 @@ module Tsuga::Adapter::Mongoid
         se = '%016x' % tile.southeast.geohash
         where(:geohash.gte => nw, :geohash.lte => se)
       end
+
+      def in_viewport(point_nw, point_se)
+        in_tile(Tile.enclosing_viewport(point_nw, point_se))
+      end
     end
   end
 end

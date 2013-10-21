@@ -33,6 +33,10 @@ module Tsuga::Adapter::Sequel
         se = tile.southeast.geohash
         where { geohash >= nw }.and { geohash <= se }
       end
+
+      def in_viewport(point_nw, point_se)
+        in_tile(Tile.enclosing_viewport(point_nw, point_se))
+      end
     end
   end
 end
