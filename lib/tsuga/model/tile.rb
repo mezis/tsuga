@@ -108,3 +108,19 @@ module Tsuga::Model
     extend ClassMethods
   end
 end
+
+__END__
+
+load 'lib/tsuga/model/tile.rb'
+
+# {"n"=>"41.41169761785169", "e"=>"2.2055472226562642", "s"=>"41.33015287320352", "w"=>"2.107700237792983", "z"=>"3"
+  
+
+sw = Tsuga::Model::Point.new(lat: 41.33015287320352, lng: 2.107700237792983)
+ne = Tsuga::Model::Point.new(lat: 41.41169761785169, lng: 2.2055472226562642)
+
+Tsuga::Model::Tile.including(sw, depth: 7)
+Tsuga::Model::Tile.including(ne, depth: 7)
+
+Tsuga::Model::Tile.enclosing_viewport(point_sw:sw, point_ne:ne, depth:7).length
+
