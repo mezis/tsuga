@@ -4,7 +4,7 @@
 
 class TsugaDemo
   constructor: (@selector) ->
-    @markers = []
+    @markers = {}
 
   setup: ->
     mapOptions = {
@@ -32,7 +32,12 @@ class TsugaDemo
     this._setDefaultRadius()
     rect = this._getViewport()
     this._log "panned to n:#{rect.n}, w:#{rect.w}, s:#{rect.s}, e:#{rect.e}"
-    this._fetchMarkers()
+    clearTimeout(@timeout)
+    @timeout = setTimeout =>
+      this._fetchMarkers()
+    , 250
+
+
 
   _fetchMarkers: ->
     rect   = this._getViewport()
@@ -44,14 +49,22 @@ class TsugaDemo
         this._updateMarkers(data)
 
   _updateMarkers: (data) ->
-    this._removeMarkers()
+    for id, marker of @markers
+      marker.dirty = true
     for cluster in data
       this._log "new marker: #{cluster.lat}, #{cluster.lng}"
-      this._addMarker(cluster)
-    for marker in @markers
-      marker.setMap(@map)
+      unless @markers[cluster.id]
+        marker = this._createMarker(cluster)
+        marker.setMap(@map)
+        @markers[cluster.id] = marker
+      @markers[cluster.id].dirty = false
+    for id, marker of @markers
+      continue unless marker.dirty
+      marker.setMap(null)
+      delete @markers[id]
 
-  _addMarker: (cluster) ->
+
+  _createMarker: (cluster) ->
     center    = new google.maps.LatLng(cluster.lat, cluster.lng)
     if cluster.weight == 1
       fillColor = '#ff0000'
@@ -67,17 +80,12 @@ class TsugaDemo
       fillOpacity:    0.35
       center:         center
       radius:         radius
-    marker = new google.maps.Circle(options)
-    @markers.push(marker)
-
-  _removeMarkers: ->
-    for marker in @markers
-      marker.setMap(null)
-    @markers = []
+    new google.maps.Circle(options)
 
   _getRadius: (center, cluster) ->
     point = new google.maps.LatLng(cluster.lat + cluster.dlat, cluster.lng + cluster.dlng)
-    google.maps.geometry.spherical.computeDistanceBetween(center, point)
+    radius = google.maps.geometry.spherical.computeDistanceBetween(center, point)
+    Math.max(radius, @defaultRadius)
 
   _setDefaultRadius: ->
     @defaultRadius = google.maps.geometry.spherical.computeDistanceBetween(
