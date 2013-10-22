@@ -36,11 +36,11 @@ module Tsuga::Adapter::Mongoid
         @_cluster_model ||= Class.new do
           include Mongoid::Document
 
+          field :tilecode
+          field :depth
           field :geohash
-          field :geohash_prefix
           field :lat
           field :lng
-          field :depth
           field :parent_id
           field :children_type
           field :children_ids
@@ -51,7 +51,7 @@ module Tsuga::Adapter::Mongoid
           field :weight
 
           store_in :collection => 'clusters'
-          index depth:1, geohash_prefix:1
+          index tilecode:1
 
           include Tsuga::Adapter::Mongoid::Cluster
         end

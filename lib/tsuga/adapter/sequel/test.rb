@@ -38,8 +38,8 @@ module Tsuga::Adapter::Sequel
         _db.create_table(:test_clusters) do
           primary_key :id
           Integer     :depth
-          BigDecimal  :geohash,        size:21
-          BigDecimal  :geohash_prefix, size:21
+          BigDecimal  :geohash,  size:21
+          BigDecimal  :tilecode, size:21
           Float       :lat
           Float       :lng
           Integer     :parent_id
@@ -51,7 +51,7 @@ module Tsuga::Adapter::Sequel
           Float       :ssq_lng
           Integer     :weight
 
-          index       [:depth, :geohash_prefix]
+          index       :tilecode
         end
       end
 

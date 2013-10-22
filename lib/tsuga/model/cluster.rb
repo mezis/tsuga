@@ -40,13 +40,13 @@ module Tsuga::Model
 
     def geohash=(*args)
       super(*args)
-      _update_geohash_prefix
+      _update_tilecode
       geohash
     end
 
     def depth=(value)
       super(value)
-      _update_geohash_prefix
+      _update_tilecode
       depth
     end
 
@@ -105,11 +105,11 @@ module Tsuga::Model
     private
 
 
-    def _update_geohash_prefix
+    def _update_tilecode
       if geohash && depth
-        self.geohash_prefix = geohash >> (64 - 2*depth)
+        self.tilecode = get_tilecode(depth)
       else
-        self.geohash_prefix = nil
+        self.tilecode = nil
       end
     end
   end

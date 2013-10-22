@@ -26,14 +26,15 @@ module Tsuga::Adapter::ActiveRecord
 
     module Scopes
       def at_depth(depth)
-        where(:depth => depth)
+        where(depth: depth)
       end
 
       # FIXME: this also is redundant with the mongoid adapter implementation
       def in_tile(*tiles)
         depths = tiles.map(&:depth).uniq
         raise ArgumentError, 'all tile must be at same depth' if depths.length > 1
-        where(depth: depths.first, geohash_prefix: tiles.map(&:prefix))
+        codes = tiles.map { |t| "%016x" % t.code }
+        where(depth: depths.first, tilecode: codes)
       end
 
       def in_viewport(sw:nil, ne:nil, depth:nil)

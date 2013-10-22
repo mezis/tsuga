@@ -13,7 +13,7 @@ module Tsuga::Model
     WIGGLE_FACTOR = 1e-4
 
     def contains?(point)
-      _prefix_for(point) == prefix
+      point.prefix(depth) == southwest.prefix(depth)
     end
 
     def dlat(count = 1)
@@ -24,8 +24,8 @@ module Tsuga::Model
       (northeast.lng - southwest.lng) * (count + WIGGLE_FACTOR)
     end
 
-    def prefix
-      @_prefix ||= _prefix_for(southwest)
+    def code
+      @_code ||= southwest.get_tilecode(depth)
     end
 
     # return the 4 children of this tile
@@ -106,12 +106,5 @@ module Tsuga::Model
       end
     end
     extend ClassMethods
-
-    private
-
-    # geohash prefix of the point at this tile's depth
-    def _prefix_for(point)
-      point.geohash >> (64 - 2*depth)
-    end
   end
 end

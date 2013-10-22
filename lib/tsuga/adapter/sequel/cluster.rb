@@ -34,7 +34,7 @@ module Tsuga::Adapter::Sequel
         if depths.length > 1
           raise ArgumentError, 'all tile must be at same depth'
         end
-        where(depth: depths.first, geohash_prefix: tiles.map(&:prefix))
+        where(depth: depths.first, tilecode: tiles.map(&:code))
       end
     end
   end
