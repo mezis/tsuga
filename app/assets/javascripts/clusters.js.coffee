@@ -8,8 +8,8 @@ class TsugaDemo
 
   setup: ->
     mapOptions = {
-      center:    new google.maps.LatLng(41.368748, 2.147869),
-      zoom:      13,
+      center:    new google.maps.LatLng(41.40205735144555, 2.1651799769821123),
+      zoom:      15,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     }
     @map = new google.maps.Map($(@selector)[0], mapOptions)
