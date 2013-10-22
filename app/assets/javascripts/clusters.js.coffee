@@ -17,6 +17,9 @@ class TsugaDemo
       this._onChangeViewport()
     google.maps.event.addListener @map, 'center_changed', =>
       this._onChangeViewport()
+    setTimeout =>
+      this._onChangeViewport()
+    , 200
     this._log "loaded map"
 
   _getViewport: ->
