@@ -5,6 +5,11 @@ GIT
     bootstrap-sass (3.0.0.0)
       sass (~> 3.2)
 
+PATH
+  remote: ../tsuga
+  specs:
+    tsuga (0.0.1)
+
 GEM
   remote: http://yarp.dev/
   specs:
@@ -236,5 +241,6 @@ DEPENDENCIES
   sdoc
   sentry-raven
   thin
+  tsuga!
   turbolinks
   uglifier (>= 1.3.0)

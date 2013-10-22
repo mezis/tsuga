@@ -17,8 +17,9 @@ ActiveRecord::Schema.define(version: 20131021145316) do
   enable_extension "plpgsql"
 
   create_table "clusters", force: true do |t|
+    t.string  "tilecode",      limit: 16
     t.integer "depth",         limit: 2
-    t.decimal "geohash",                 precision: 21, scale: 0
+    t.string  "geohash",       limit: 16
     t.float   "lat"
     t.float   "lng"
     t.integer "parent_id"
@@ -26,10 +27,12 @@ ActiveRecord::Schema.define(version: 20131021145316) do
     t.string  "children_ids"
     t.float   "sum_lat"
     t.float   "sum_lng"
+    t.float   "ssq_lat"
+    t.float   "ssq_lng"
     t.integer "weight"
   end
 
-  add_index "clusters", ["depth", "geohash"], name: "index_clusters_on_depth_and_geohash", using: :btree
+  add_index "clusters", ["tilecode"], name: "index_clusters_on_tilecode", using: :btree
 
   create_table "points", force: true do |t|
     t.string   "name"

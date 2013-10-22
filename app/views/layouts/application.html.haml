@@ -7,6 +7,6 @@
     = csrf_meta_tags
 
     %meta{:content => "initial-scale=1.0, user-scalable=no", :name => "viewport"}/
-    %script{:src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&sensor=true", :type => "text/javascript"}
+    %script{:src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&sensor=true&libraries=geometry", :type => "text/javascript"}
   %body
     = yield

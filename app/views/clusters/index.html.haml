@@ -2,38 +2,17 @@
 
 %table
   %tr
-    %th Name
     %th Lat
     %th Lng
     %th Geohash
     %th Depth
-    %th Parent
-    %th Children type
-    %th Children ids
-    %th Sum lat
-    %th Sum lng
     %th Weight
-    %th
-    %th
-    %th
 
   - @clusters.each do |cluster|
     %tr
-      %td= cluster.name
       %td= cluster.lat
       %td= cluster.lng
       %td= cluster.geohash
       %td= cluster.depth
-      %td= cluster.parent_id
-      %td= cluster.children_type
-      %td= cluster.children_ids
-      %td= cluster.sum_lat
-      %td= cluster.sum_lng
       %td= cluster.weight
-      %td= link_to 'Show', cluster
-      %td= link_to 'Edit', edit_cluster_path(cluster)
-      %td= link_to 'Destroy', cluster, :method => :delete, :data => { :confirm => 'Are you sure?' }
 
-%br
-
-= link_to 'New Cluster', new_cluster_path

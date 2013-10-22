@@ -4,11 +4,12 @@
       Tsuga
 
 #map-container
-  #map-canvas
+  #map-canvas{ data: { 'clusters-path' => clusters_path } }
 
 .container
 
 :coffee
   $(document).ready ->
     console.log "doc ready"
-    TsugaDemo.initialize('#map-canvas')
+    window.demo = new TsugaDemo '#map-canvas'
+    demo.setup()
