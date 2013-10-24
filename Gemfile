@@ -13,3 +13,5 @@ gem 'perftools.rb',      :require => false
 
 gem 'travis',            :require => false
 gem 'websocket-native',  :require => false
+
+gem 'ruby-progressbar'

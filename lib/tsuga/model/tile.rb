@@ -49,6 +49,19 @@ module Tsuga::Model
       Tile.including(new_point, depth: depth)
     end
 
+    # return neighbouring tiles to the north, northeast, and east
+    def neighbours
+      [[0,0], [1,0], [0,1], [1, 1]].map do |lat, lng|
+        begin 
+          neighbour(lat:lat, lng:lng)
+        rescue NoMethodError => e
+          require 'pry' ; require 'pry-nav' ; binding.pry
+        rescue ArgumentError
+          nil
+        end
+      end.compact
+    end
+
     module ClassMethods
       # Returns a Tile instance.
       # +point+ should respond to +geohash+.

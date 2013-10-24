@@ -10,8 +10,12 @@ module Tsuga::Service
     # fraction of tile diagonal
     MIN_DISTANCE_RATIO = 0.2
 
+    # after #run, this contains the clusters that were merged into other clusters
+    attr_reader :dropped_clusters
+
     def initialize(clusters)
       @_clusters = clusters
+      @dropped_clusters = []
     end
 
     def run
@@ -40,6 +44,7 @@ module Tsuga::Service
         # merge clusters
         left.merge(right)
         _clusters.delete_if { |c| c.object_id == right.object_id }
+        dropped_clusters << right
 
         # create new pairs
         _clusters.each do |cluster|

@@ -1,9 +1,12 @@
 require 'tsuga/model/tile'
 require 'tsuga/service/aggregator'
 
+require 'ruby-progressbar'
+
 module Tsuga::Service
   class Clusterer
     Tile = Tsuga::Model::Tile
+    VERBOSE = ENV['VERBOSE']
 
     attr_reader :_adapter, :_source
 
@@ -23,13 +26,15 @@ module Tsuga::Service
 
       # for all depths N from 18 to 3
       (Tsuga::MAX_DEPTH-1).downto(Tsuga::MIN_DEPTH) do |depth|
-        log "at depth #{depth}"
+        # progress.log "depth #{depth}"                                       if VERBOSE
+        progress.title = "#{depth}.0"                                       if VERBOSE
 
         # find children (clusters or records) from deeper level, N+!
         points_ids = _adapter.at_depth(depth+1).collect_ids
 
         if points_ids.empty?
-          log "nothing to cluster"
+          progress.log "nothing to cluster"                                 if VERBOSE
+          progress.finish                                                   if VERBOSE
           return
         end
 
@@ -46,8 +51,11 @@ module Tsuga::Service
         # 
         # 1 tile is processed at each iteration.
         # 
+        progress.title = "#{depth}.1"                                       if VERBOSE
+        progress.set_phase(depth, 1, points_ids.length)                     if VERBOSE
         while points_ids.any?
-          log "... #{points_ids.size} children left"
+          progress.set_progress(points_ids.length)                          if VERBOSE
+
           point = _adapter.find_by_id(points_ids.first)
           tile = Tile.including(point, depth: depth)
           used_ids, clusters = _build_clusters(tile)
@@ -60,18 +68,90 @@ module Tsuga::Service
           # TODO: use a save queue, only run saves if > 100 clusters to write
           _adapter.mass_create(clusters)
         end
+        progress.reset
+
+        # find recently-built clusters and run another pass of aggreggation
+        # between neighbouring tiles
+        # TODO: add tests for second pass
+        cluster_ids = _adapter.at_depth(depth).collect_ids
+        drop_count = 0
+
+        progress.title = "#{depth}.2"                                       if VERBOSE
+        progress.log "created #{cluster_ids.length} clusters on first pass" if VERBOSE
+        progress.set_phase(depth, 2, cluster_ids.length)                    if VERBOSE
+        loop do
+          progress.set_progress(cluster_ids.length)                         if VERBOSE
+
+          while cluster_ids.any?
+            cluster = _adapter.where(id: cluster_ids.pop).first
+            break if cluster
+          end
+          break if cluster.nil?
+          
+          tile = Tile.including(cluster, depth: depth)
+          neighbours = tile.neighbours
+
+          used_ids = _adapter.in_tile(tile).collect_ids
+          raise 'invariant broken' if used_ids.empty?
+          cluster_ids -= used_ids
+
+          clusters = _adapter.in_tile(*neighbours).to_a
+          Aggregator.new(clusters).tap do |aggregator|
+            aggregator.run
+            drop_count += aggregator.dropped_clusters.length
+            aggregator.dropped_clusters.each(&:destroy)
+          end
+        end
+        progress.log "dropped #{drop_count} clusters on second pass"        if VERBOSE && drop_count > 0
 
         # TODO: fix parent_id in tree
       end
+      progress.finish                                                       if VERBOSE
     end
 
     private
 
+    def progress
+      @_progressbar ||= ProgressBar.create.extend(SteppedProgressBar)
+    end
 
-    def log(msg)
-      return unless ENV['VERBOSE']
-      $stderr.puts("[clusterer] #{msg}")
-      $stderr.flush
+    module SteppedProgressBar
+      def set_phase(depth, phase, count)
+        _compute_totals
+        @current_phase = phase
+        @current_depth = depth
+        @current_count = count
+      end
+
+      def set_progress(count)
+        key = [@current_depth,@current_phase]
+        self.progress = @phase_total[key] - 
+          @phase_subtotal[key] * count / @current_count
+      rescue Exception => e
+        require 'pry' ; require 'pry-nav' ; binding.pry
+      end
+
+      private
+
+      MAX = Tsuga::MAX_DEPTH-1
+      MIN = Tsuga::MIN_DEPTH
+      FACTOR = 0.5
+
+      def _compute_totals
+        return if @phase_total
+        sum = 0
+        @phase_total = {}
+        @phase_subtotal = {}
+        MAX.downto(MIN) do |depth|
+          [1,2].each do |phase|
+            weight = FACTOR ** (MAX-depth)
+            sum += weight
+            @phase_total[[depth,phase]] = sum
+            @phase_subtotal[[depth,phase]] = weight
+          end
+        end
+        self.total = sum
+      end
     end
 
 
