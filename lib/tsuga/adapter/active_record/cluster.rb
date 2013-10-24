@@ -8,6 +8,10 @@ module Tsuga::Adapter::ActiveRecord
       by.send :include, Base
       by.send :include, Tsuga::Model::Cluster
       by.extend Scopes
+
+      by.class_eval do
+        belongs_to :parent, class_name: by.name
+      end
     end
 
     def children_ids

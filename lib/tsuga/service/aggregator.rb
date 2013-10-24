@@ -7,18 +7,21 @@ module Tsuga::Service
   # Aggregates clusters together until no two clusters are closer than
   # a given minimum distance.
   class Aggregator
-    # fraction of tile diagonal
-    MIN_DISTANCE_RATIO = 0.2
-
     # after #run, this contains the clusters that were merged into other clusters
     attr_reader :dropped_clusters
+    # after #run, this contains the clusters that were modified and need to be persisted
+    attr_reader :updated_clusters
 
-    def initialize(clusters)
+    def initialize(clusters:nil, ratio:nil)
       @_clusters = clusters
       @dropped_clusters = []
+      @updated_clusters = Set.new
+      @min_distance_ratio = ratio # fraction of tile diagonal
     end
 
     def run
+      warn "running aggregation on #{_clusters.size} clusters" if _clusters.size > 50
+
       # build the set of pairs (n²/2)
       pairs  = []
       source = _clusters.dup
@@ -29,8 +32,6 @@ module Tsuga::Service
       end
 
       # pop & merge
-      to_delete  = []
-      to_persist = Set.new
       while pairs.any?
         best_pair = pairs.min
         break if best_pair.distance > min_distance
@@ -45,6 +46,7 @@ module Tsuga::Service
         left.merge(right)
         _clusters.delete_if { |c| c.object_id == right.object_id }
         dropped_clusters << right
+        updated_clusters << left
 
         # create new pairs
         _clusters.each do |cluster|
@@ -61,7 +63,7 @@ module Tsuga::Service
         depth = _clusters.first.depth
         point = Tsuga::Model::Point.new.set_coords(0,0)
         tile  = Tsuga::Model::Tile.including(point, depth: depth)
-        (tile.southwest & tile.northeast) * MIN_DISTANCE_RATIO
+        (tile.southwest & tile.northeast) * @min_distance_ratio
       end
     end
 

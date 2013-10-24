@@ -51,13 +51,14 @@ module Tsuga::Model
 
     # return neighbouring tiles to the north, northeast, and east
     def neighbours
-      [[0,0], [1,0], [0,1], [1, 1]].map do |lat, lng|
+      offsets = (-1..1).to_a.product((-1..1).to_a)
+      offsets.map do |lat, lng|
         begin 
           neighbour(lat:lat, lng:lng)
         rescue NoMethodError => e
           require 'pry' ; require 'pry-nav' ; binding.pry
         rescue ArgumentError
-          nil
+          nil # occurs on world boundaries
         end
       end.compact
     end

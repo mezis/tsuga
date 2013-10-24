@@ -5,6 +5,8 @@ require 'ruby-progressbar'
 
 module Tsuga::Service
   class Clusterer
+    FIRST_PASS_RATIO  = 0.05
+    SECOND_PASS_RATIO = 0.2
     Tile = Tsuga::Model::Tile
     VERBOSE = ENV['VERBOSE']
 
@@ -52,6 +54,7 @@ module Tsuga::Service
         # 1 tile is processed at each iteration.
         # 
         progress.title = "#{depth}.1"                                       if VERBOSE
+        progress.log "started with #{points_ids.length} points"             if VERBOSE
         progress.set_phase(depth, 1, points_ids.length)                     if VERBOSE
         while points_ids.any?
           progress.set_progress(points_ids.length)                          if VERBOSE
@@ -63,7 +66,7 @@ module Tsuga::Service
             raise 'invariant broken'
           end
           points_ids -= used_ids
-          _assemble_clusters(clusters)
+          Aggregator.new(clusters:clusters, ratio:FIRST_PASS_RATIO).run
 
           # TODO: use a save queue, only run saves if > 100 clusters to write
           _adapter.mass_create(clusters)
@@ -96,15 +99,27 @@ module Tsuga::Service
           cluster_ids -= used_ids
 
           clusters = _adapter.in_tile(*neighbours).to_a
-          Aggregator.new(clusters).tap do |aggregator|
+          Aggregator.new(clusters:clusters, ratio:SECOND_PASS_RATIO).tap do |aggregator|
             aggregator.run
             drop_count += aggregator.dropped_clusters.length
-            aggregator.dropped_clusters.each(&:destroy)
+            aggregator.dropped_clusters.each(&:delete)
+            aggregator.updated_clusters.each(&:persist!)
           end
-        end
+        end if true
         progress.log "dropped #{drop_count} clusters on second pass"        if VERBOSE && drop_count > 0
 
+        # set parent_id in the whole tree
         # TODO: fix parent_id in tree
+        progress.title = "#{depth}.3"                                       if VERBOSE
+        # progress.set_phase(depth, 3, _adapter.at_depth(depth).count)        if VERBOSE
+        _adapter.at_depth(depth).find_each do |cluster|
+          cluster.children_ids.each do |child_id|
+            _adapter.find_by_id(child_id).tap do |child|
+              child.parent_id = cluster.id
+              child.persist!
+            end
+          end
+        end
       end
       progress.finish                                                       if VERBOSE
     end
@@ -169,11 +184,6 @@ module Tsuga::Service
       return [used_ids, clusters]
     end
 
-
-    def _assemble_clusters(clusters)
-      warn "running aggregation on #{clusters.size} clusters" if clusters.size > 50
-      Aggregator.new(clusters).run
-    end
 
   end
 end

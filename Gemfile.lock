@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     tsuga (0.0.1)
+      ruby-progressbar
 
 GEM
   remote: http://yarp.dev/
