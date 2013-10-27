@@ -8,7 +8,6 @@ gem 'mysql2',            :require => false
 gem 'sequel',            :require => false
 gem 'mongoid',           :require => false
 gem 'activerecord',      :require => false
-gem 'benchmark-ips',     :require => false
 gem 'perftools.rb',      :require => false
 
 gem 'travis',            :require => false
