@@ -1,1 +1,4 @@
-module Tsuga::Adapter ; end
+require 'tsuga'
+
+module Tsuga::Adapter
+end
