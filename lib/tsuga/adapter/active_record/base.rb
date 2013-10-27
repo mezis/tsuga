@@ -14,7 +14,7 @@ module Tsuga::Adapter::ActiveRecord
     end
 
     def persist!
-      save
+      save!
     end
 
     # TODO: the geohash-conversion is shared with the Mongoid adapter. Factor this out.
