@@ -64,6 +64,10 @@ module Tsuga::Adapter::ActiveRecord
         cluster_model = Class.new(ActiveRecord::Base) do
           self.table_name = 'test_clusters'
           include Tsuga::Adapter::ActiveRecord::Cluster
+
+          def run_callbacks(*args)
+            yield if block_given?
+          end
         end
 
         record_model = Class.new(ActiveRecord::Base) do
