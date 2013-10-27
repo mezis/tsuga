@@ -55,8 +55,6 @@ module Tsuga::Model
       offsets.map do |lat, lng|
         begin 
           neighbour(lat:lat, lng:lng)
-        rescue NoMethodError => e
-          require 'pry' ; require 'pry-nav' ; binding.pry
         rescue ArgumentError
           nil # occurs on world boundaries
         end
