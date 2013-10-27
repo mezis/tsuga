@@ -30,12 +30,28 @@ module Tsuga::Model
 
     # latitude deviation in cluster
     def dlat
-      Math.sqrt(((sum_lat/weight)**2 - ssq_lat/weight).abs)
+      @_dlat ||= Math.sqrt(ssq_lat/weight - (sum_lat/weight)**2)
     end
 
     # longitude deviation in cluster
     def dlng
-      Math.sqrt(((sum_lng/weight)**2 - ssq_lng/weight).abs)
+      @_dlng ||= Math.sqrt(ssq_lng/weight - (sum_lng/weight)**2)
+    end
+
+    # radius of cluster
+    def radius
+      @_radius ||= Math.sqrt(dlat ** 2 + dlng ** 2)
+    end
+
+    # density (weight per unit area)
+    def density
+      @_density ||= begin
+        # min. radius 1.4e-4 (about 15m at european latitudes)
+        # for 1-point clusters where density would otherwise be infinite
+        our_radius = [radius, 1.4e-4].max 
+        # Math.log(weight / (our_radius ** 2)) / Math.log(2)
+        weight / (our_radius ** 2)
+      end
     end
 
     def geohash=(*args)
@@ -62,6 +78,9 @@ module Tsuga::Model
       self.ssq_lng += other.ssq_lng
       set_coords(sum_lat/weight, sum_lng/weight)
       self.children_ids += other.children_ids
+
+      # dirty calculated values
+      @_dlng = @_dlat = @_radius = @_density = nil
     end
 
 
