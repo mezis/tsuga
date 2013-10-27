@@ -12,6 +12,10 @@ module Tsuga::Adapter::Mongoid
       save!
     end
 
+    def id
+      @_id ||= super
+    end
+
     def geohash
       value = super
       value.kind_of?(String) ? value.to_i(16) : value

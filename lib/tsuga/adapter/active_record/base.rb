@@ -9,6 +9,10 @@ module Tsuga::Adapter::ActiveRecord
       by.extend DatasetMethods
     end
 
+    def id
+      @_id ||= super
+    end
+
     def persist!
       save
     end
