@@ -23,6 +23,9 @@ module Tsuga::Service
       return if _clusters.empty?
       warn "warning: running aggregation on many clusters (#{_clusters.size})" if _clusters.size > 100
 
+      if DENSITY_BIAS_FACTOR
+        @min_density, @max_density = _clusters.collect(&:density).minmax
+      end
 
       # build the set of pairs (n²/2)
       pairs  = []
@@ -79,12 +82,24 @@ module Tsuga::Service
 
     private
 
+    # FIXME: a sensible value would be ~0.4 in theory, but this
+    # biasing seems to have little impact. remove?
+    DENSITY_BIAS_FACTOR = nil
+
     attr_reader :_clusters, :_fence, :_dropped_clusters, :_updated_clusters
 
     # factory for pairs, switches between fenced/unfenced
     # and conditionnaly adds density bias
     def _build_pair(c1, c2, fence)
       pair = fence.nil? ? Pair.new(c1, c2) : FencedPair.new(c1, c2, fence)
+
+      if DENSITY_BIAS_FACTOR && (@max_density != @min_density)
+        # the least dense cluster pairs have a density_bias value close to 0, the densest closer to 1
+        density_bias = (c1.density + c2.density - 2 * @min_density) / (2 * (@max_density - @min_density))
+        # this makes dense clusters appear closer, and vice-versa
+        pair.distance = pair.distance * (1 + DENSITY_BIAS_FACTOR * (1 - density_bias) - 0.5 * DENSITY_BIAS_FACTOR)
+      end
+      pair
     end
 
     def _default_fence
@@ -96,7 +111,7 @@ module Tsuga::Service
     # and comparison is based on distance
     class Pair
       include Comparable
-      attr_reader :distance
+      attr_accessor :distance
 
       def initialize(c1, c2)
         @left     = c1
@@ -112,6 +127,9 @@ module Tsuga::Service
         self.distance <=> other.distance
       end
 
+      # def ==(other)
+      #   (self.left_id == other.left_id) && (self.right_id == other.right_id)
+      # end
 
       def values
         [@left, @right]
