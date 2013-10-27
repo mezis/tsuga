@@ -48,10 +48,10 @@ module Tsuga::Adapter::ActiveRecord
           t.integer  :parent_id
           t.string   :children_type
           t.string   :children_ids # FIXME
-          t.float    :sum_lat
-          t.float    :sum_lng
-          t.float    :ssq_lat
-          t.float    :ssq_lng
+          t.float    :sum_lat,  limit:53
+          t.float    :sum_lng,  limit:53
+          t.float    :ssq_lat,  limit:53
+          t.float    :ssq_lng,  limit:53
           t.integer  :weight
         end
 
