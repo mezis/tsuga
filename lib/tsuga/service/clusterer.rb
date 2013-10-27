@@ -5,16 +5,17 @@ require 'ruby-progressbar'
 
 module Tsuga::Service
   class Clusterer
-    FIRST_PASS_RATIO  = 0.05
-    SECOND_PASS_RATIO = 0.2
+    PROXIMITY_RATIO  = 0.15
+    RUN_SANITY_CHECK = false
+    VERBOSE          = ENV['VERBOSE']
     Tile = Tsuga::Model::Tile
-    VERBOSE = ENV['VERBOSE']
 
-    attr_reader :_adapter, :_source
+    attr_reader :_adapter, :_source, :_queue
 
     def initialize(source: nil, adapter: nil)
       @_source  = source
       @_adapter = adapter
+      @_queue   = WriteQueue.new(adapter: adapter)
     end
 
     def run
@@ -23,103 +24,113 @@ module Tsuga::Service
 
       # create lowest-level clusters
       _source.find_each do |record|
-        _adapter.build_from(Tsuga::MAX_DEPTH, record).persist!
+        _queue.push _adapter.build_from(Tsuga::MAX_DEPTH, record)
       end
+      _queue.flush
 
       # for all depths N from 18 to 3
       (Tsuga::MAX_DEPTH-1).downto(Tsuga::MIN_DEPTH) do |depth|
-        # progress.log "depth #{depth}"                                       if VERBOSE
+        progress.log "depth #{depth}"                                       if VERBOSE
         progress.title = "#{depth}.0"                                       if VERBOSE
 
-        # find children (clusters or records) from deeper level, N+!
-        points_ids = _adapter.at_depth(depth+1).collect_ids
+        # create clusters at this level from children
+        # TODO: use a save queue, only run saves if > 100 clusters to write
+        cluster_ids = Set.new
+        _adapter.at_depth(depth+1).find_each do |child|
+          _queue.push _adapter.build_from(depth, child)
+        end
+        _queue.flush
+        cluster_ids = MutableSet.new(_adapter.at_depth(depth).collect_ids)
 
-        if points_ids.empty?
+        if cluster_ids.empty?
           progress.log "nothing to cluster"                                 if VERBOSE
-          progress.finish                                                   if VERBOSE
-          return
+          break
         end
 
         # TODO: group points to cluster by tile, and run on tiles in parallel.
 
-        # assuming the data set is sparse, we walk the set instead of walking
-        # all possible tiles:
-        # 
-        # as long as there are unprocessed children at depth N+1 (records if deepest level)
-        # find the tile for the first remaining child;
-        # in this tile,
-        #   build a cluster of level N pointing to each child (_build_clusters)
-        #   then run aggregation (_assemble_clusters)
-        # 
-        # 1 tile is processed at each iteration.
-        # 
         progress.title = "#{depth}.1"                                       if VERBOSE
-        progress.log "started with #{points_ids.length} points"             if VERBOSE
-        progress.set_phase(depth, 1, points_ids.length)                     if VERBOSE
-        while points_ids.any?
-          progress.set_progress(points_ids.length)                          if VERBOSE
-
-          point = _adapter.find_by_id(points_ids.first)
-          tile = Tile.including(point, depth: depth)
-          used_ids, clusters = _build_clusters(tile)
-          if used_ids.empty?
-            raise 'invariant broken'
-          end
-          points_ids -= used_ids
-          Aggregator.new(clusters:clusters, ratio:FIRST_PASS_RATIO).run
-
-          # TODO: use a save queue, only run saves if > 100 clusters to write
-          _adapter.mass_create(clusters)
-        end
-        progress.reset
-
-        # find recently-built clusters and run another pass of aggreggation
-        # between neighbouring tiles
-        # TODO: add tests for second pass
-        cluster_ids = _adapter.at_depth(depth).collect_ids
-        drop_count = 0
-
-        progress.title = "#{depth}.2"                                       if VERBOSE
-        progress.log "created #{cluster_ids.length} clusters on first pass" if VERBOSE
-        progress.set_phase(depth, 2, cluster_ids.length)                    if VERBOSE
-        loop do
+        progress.log "started with #{cluster_ids.length} clusters"          if VERBOSE
+        progress.set_phase(depth, 1, cluster_ids.length)                    if VERBOSE
+        while cluster_ids.any?
           progress.set_progress(cluster_ids.length)                         if VERBOSE
 
-          while cluster_ids.any?
-            cluster = _adapter.where(id: cluster_ids.pop).first
-            break if cluster
-          end
-          break if cluster.nil?
-          
+          cluster = _adapter.find_by_id(cluster_ids.first)
+          raise 'internal error: cluster was already removed' if cluster.nil?
           tile = Tile.including(cluster, depth: depth)
-          neighbours = tile.neighbours
 
-          used_ids = _adapter.in_tile(tile).collect_ids
-          raise 'invariant broken' if used_ids.empty?
-          cluster_ids -= used_ids
+          clusters = _adapter.in_tile(*tile.neighbours).to_a
+          processed_cluster_ids = clusters.collect(&:id)
 
-          clusters = _adapter.in_tile(*neighbours).to_a
-          Aggregator.new(clusters:clusters, ratio:SECOND_PASS_RATIO).tap do |aggregator|
+          # clusters we aggregate in this loop iteration
+          # they are _not_ the same as what we pass to the aggregator,
+          # just those inside the fence
+          fenced_cluster_ids = _adapter.in_tile(tile).collect_ids
+
+          if fenced_cluster_ids.empty?
+            require 'pry' ; require 'pry-nav' ; binding.pry
+          end          
+
+          Aggregator.new(clusters:clusters, ratio:PROXIMITY_RATIO, fence:tile).tap do |aggregator|
             aggregator.run
-            drop_count += aggregator.dropped_clusters.length
-            aggregator.dropped_clusters.each(&:delete)
-            aggregator.updated_clusters.each(&:persist!)
-          end
-        end if true
-        progress.log "dropped #{drop_count} clusters on second pass"        if VERBOSE && drop_count > 0
 
-        # set parent_id in the whole tree
-        # TODO: fix parent_id in tree
-        progress.title = "#{depth}.3"                                       if VERBOSE
-        # progress.set_phase(depth, 3, _adapter.at_depth(depth).count)        if VERBOSE
-        _adapter.at_depth(depth).find_each do |cluster|
-          cluster.children_ids.each do |child_id|
-            _adapter.find_by_id(child_id).tap do |child|
-              child.parent_id = cluster.id
-              child.persist!
+            if VERBOSE
+              progress.log("aggregator: %4d left, %2d processed, %2d in fence, %2d updated, %2d dropped" % [
+                cluster_ids.length,
+                processed_cluster_ids.length,
+                fenced_cluster_ids.length,
+                aggregator.updated_clusters.length,
+                aggregator.dropped_clusters.length]) 
+              if aggregator.updated_clusters.any?
+                progress.log("updated: #{aggregator.updated_clusters.collect(&:id).join(', ')}")
+              end
+              if aggregator.dropped_clusters.any?
+                progress.log("dropped: #{aggregator.dropped_clusters.collect(&:id).join(', ')}")
+              end
+            end
+
+            cluster_ids.remove! fenced_cluster_ids
+            # updated clusters may need to be reprocessed (they might have fallen close enough to tile edges)
+            # TODO: as further optimisation, do not mark for reprocessing clusters that are still inside the fence
+            cluster_ids.merge! aggregator.updated_clusters.collect(&:id)
+            # destroyed clusters may include some on the outer fringe of the fence tile
+            cluster_ids.remove! aggregator.dropped_clusters.collect(&:id)
+
+            aggregator.dropped_clusters.each(&:destroy)
+            _adapter.mass_update(aggregator.updated_clusters)
+          end
+
+          if RUN_SANITY_CHECK
+            # sanity check: all <cluster_ids> should exist
+            not_removed = cluster_ids - _adapter.at_depth(depth).collect_ids
+            if not_removed.any?
+              raise "cluster_ids contains IDs of deleted clusters: #{not_removed.to_a.join(', ')}"
+            end
+
+            # sanity check: sum of weights should match that of lower level
+            deeper_weight = _adapter.at_depth(depth+1).sum(:weight)
+            this_weight   = _adapter.at_depth(depth).sum(:weight)
+            if deeper_weight != this_weight
+              raise "mismatch between weight at this depth (#{this_weight}) and deeper level (#{deeper_weight})"
             end
           end
         end
+
+        # set parent_id in the whole tree
+        # this is made slightly more complicated by #find_each's scoping
+        progress.title = "#{depth}.2"                                       if VERBOSE
+        child_mappings = {}
+        _adapter.at_depth(depth).find_each do |cluster|
+          cluster.children_ids.each do |child_id|
+            child_mappings[child_id] = cluster.id
+          end
+        end
+        child_mappings.each_pair do |child_id, parent_id|
+          cluster = _adapter.find_by_id(child_id)
+          cluster.parent_id = parent_id
+          _queue.push cluster
+        end
+        _queue.flush
       end
       progress.finish                                                       if VERBOSE
     end
@@ -158,17 +169,80 @@ module Tsuga::Service
         @phase_total = {}
         @phase_subtotal = {}
         MAX.downto(MIN) do |depth|
-          [1,2].each do |phase|
-            weight = FACTOR ** (MAX-depth)
-            sum += weight
-            @phase_total[[depth,phase]] = sum
-            @phase_subtotal[[depth,phase]] = weight
+          depth_weight = FACTOR ** (MAX-depth)
+          [1,1,1].each_with_index do |phase_weight, phase_index|
+            phase_subtotal = depth_weight * phase_weight
+            sum += phase_subtotal
+            @phase_total[[depth,phase_index]]    = sum
+            @phase_subtotal[[depth,phase_index]] = phase_subtotal
           end
         end
         self.total = sum
       end
     end
 
+    # A Set-like structure, with in-place merging with, and removing of, another enumerable.
+    class MutableSet
+      include Enumerable
+      extend Forwardable
+
+      def initialize(enum = nil)
+        @_data = {}
+        merge!(enum) if enum
+      end
+
+      def -(enum)
+        self.class.new.tap do |result|
+          result.instance_variable_set(:@_data, @_data.dup)
+          result.remove!(enum)
+        end
+      end
+
+      def each
+        @_data.each_key { |k| yield k }
+      end
+
+      def merge!(enum)
+        enum.each { |key| @_data[key] = true }
+      end
+
+      def remove!(enum)
+        enum.each { |key| @_data.delete(key) }
+      end
+
+      def_delegators :@_data, :size, :length, :empty?
+    end
+
+
+    # TODO: extract to a separate file
+    class WriteQueue
+      QUEUE_SIZE = 250
+
+      def initialize(adapter:nil)
+        @_adapter = adapter
+        @_queue    = []
+      end
+
+      def push(value)
+        @_queue.push(value)
+        flush if @_queue.size > QUEUE_SIZE
+        nil
+      end
+
+      def flush
+        # separate inserts from updates
+        inserts = _queue.map { |c| c.new_record? ? c : nil }.compact
+        updates = _queue.map { |c| c.new_record? ? nil : c }.compact
+
+        _adapter.mass_create(inserts) if inserts.any?
+        _adapter.mass_update(updates) if updates.any?
+        _queue.clear
+      end
+
+      private
+
+      attr_reader :_queue, :_adapter
+    end
 
     # return the record IDs used
     def _build_clusters(tile)

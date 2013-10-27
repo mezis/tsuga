@@ -15,10 +15,11 @@ describe Tsuga::Service::Aggregator do
       cluster.ssq_lat = lat * lat
       cluster.ssq_lng = lng * lng
       cluster.children_ids = []
+      cluster.persist!
     end
   end
 
-  subject { described_class.new(clusters) }
+  subject { described_class.new(clusters:clusters, ratio:0.2) }
 
   describe '#min_distance' do
     let(:clusters) { [new_cluster(2,0,0)] }
