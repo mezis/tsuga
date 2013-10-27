@@ -30,8 +30,9 @@ PDF_PROFILE = "#{RAW_PROFILE}.pdf"
 
 def new_cluster(depth, lat, lng)
   Cluster.new.tap do |cluster|
-    cluster.depth = depth
-    cluster.set_coords(lat,lng)
+    cluster.depth   = depth
+    cluster.lat     = lat
+    cluster.lng     = lng
     cluster.weight  = 1
     cluster.sum_lat = lat
     cluster.sum_lng = lng

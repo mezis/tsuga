@@ -30,55 +30,35 @@ module Tsuga::Model
     end
 
 
-    def geohash(autoupdate=true)
-      autoupdate ? (super() || _update_geohash) : super()
-    end
-
-
-    def geohash=(value, dirty=true)
-      self.lat = self.lng = nil if value && dirty
+    def geohash=(value)
       super(value)
+      _updating_coords { _set_latlng_from_geohash }
+      geohash
     end
 
 
-    def lat(autoupdate=true)
-      autoupdate ? (super() || _update_latlng.first) : super()
-    end
-
-
-    def lng(autoupdate=true)
-      autoupdate ? (super() || _update_latlng.last) : super()
-    end
-
-
-    def lat=(value, dirty=true)
-      self.geohash = nil if value && dirty
+    def lat=(value)
+      _validate_lat(value) if value
       super(value)
+      _updating_coords { _set_geohash_from_latlng }
+      lat
     end
 
 
-    def lng=(value, dirty=true)
-      self.geohash = nil if value && dirty
+    def lng=(value)
+      _validate_lng(value) if value
       super(value)
-    end
-
-
-    def set_coords(_lat, _lng)
-      _validate_latlng(_lat, _lng)
-
-      self.lat = _lat
-      self.lng = _lng
-      self.geohash
-      self
+      _updating_coords { _set_geohash_from_latlng }
+      lng
     end
 
 
     def inspect
-      "<%s lat:%s lng:%s geohash:%s>" % [
+      "<%s lat:%s lng:%s geohash:0x%s>" % [
         (self.class.name || 'Point').gsub(/.*::/, ''),
-        lat(false) ? ("%.3f" % lat(false)) : 'nil',
-        lng(false) ? ("%.3f" % lng(false)) : 'nil',
-        geohash(false) ? ("%016x" % geohash(false)) : 'nil'
+        lat ? ("%.3f" % lat) : 'nil',
+        lng ? ("%.3f" % lng) : 'nil',
+        geohash ? ("%016x" % geohash) : 'nil'
       ]
     end
 
@@ -92,38 +72,57 @@ module Tsuga::Model
 
     private
 
+    # only the outmost call yields.
+    # prevents infinite loops of latlng <-> geohash updates
+    def _updating_coords
+      return if @_updating
+      @_updating = true
+      yield
+      @_updating = false
+    end
 
-    def _validate_latlng(_lat, _lng)
+
+    def _validate_lat(_lat)
       raise ArgumentError, 'bad lat' unless ( -90.0 ...  90.0).include?(_lat)
+    end
+
+    def _validate_lng(_lng)
       raise ArgumentError, 'bad lng' unless (-180.0 ... 180.0).include?(_lng)
     end
 
 
     # Convert the geohash into lat/lng
-    def _update_latlng
-      geohash = self.geohash(false)
-      return [nil,nil] if geohash.nil?
+    def _set_latlng_from_geohash
+      geohash = self.geohash
+      if geohash.nil?
+        self.lat = self.lng = nil
+        return
+      end
       raise ArgumentError, 'bad hash' unless (0 ... (1<<64)).include?(geohash)
 
       lat,lng = _deinterleave_bits(geohash)
       lat = lat * 180.0 / (1<<32) -  90.0
       lng = lng * 360.0 / (1<<32) - 180.0
-      self.send(:lat=, lat, false)
-      self.send(:lng=, lng, false)
-
-      [lat, lng]
+      self.lat = lat
+      self.lng = lng
+      return
     end
 
 
-    def _update_geohash
-      lat = self.lat(false)
-      lng = self.lng(false)
-      return nil if lat.nil? || lng.nil?
-      _validate_latlng(lat, lng)
+    def _set_geohash_from_latlng
+      lat = self.lat
+      lng = self.lng
+      if lat.nil? || lng.nil?
+        self.geohash = nil
+        return
+      end
+      _validate_lat(lat)
+      _validate_lng(lng)
       normalized_lat = ((lat +  90.0) * (1<<32) / 180.0).to_i
       normalized_lng = ((lng + 180.0) * (1<<32) / 360.0).to_i
-      geohash = _interleave_bits(normalized_lat, normalized_lng)
-      self.send(:geohash=, geohash, false)
+
+      self.geohash = _interleave_bits(normalized_lat, normalized_lng)
+      return
     end
 
 
@@ -190,7 +189,6 @@ module Tsuga::Model
       else
         self.lat = lat
         self.lng = lng
-        self.geohash
       end
     end
   end

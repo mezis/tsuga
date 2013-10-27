@@ -16,7 +16,8 @@ describe Tsuga::Model::Tile do
 
     context "on equator/greenwidth" do
       before do
-        point.set_coords(0,0)
+        point.lat   = 0
+        point.lng   = 0
         depth.value = 18
       end
 
@@ -40,48 +41,56 @@ describe Tsuga::Model::Tile do
 
     subject do
       described_class.including(
-        Tsuga::Model::Point.new.set_coords(0,0), :depth => 2)
+        Tsuga::Model::Point.new(lat:0, lng:0), :depth => 2)
     end
 
     let(:result) { subject.contains?(point) }
 
     it 'includes the northwest corner' do
-      point.set_coords(0,0)
+      point.lat = 0
+      point.lng = 0
       result.should be_true
     end
 
     it 'excludes the southeast corner' do
-      point.set_coords(45,90)
+      point.lat = 45
+      point.lng = 90
       result.should be_false
     end
 
     it 'includes point close to the southeast corner' do
-      point.set_coords(45 - 1e-6, 90 - 1e-6)
+      point.lat = 45 - 1e-6
+      point.lng = 90 - 1e-6
       result.should be_true
     end
 
     it 'includes the center point' do
-      point.set_coords(22.5, 45)
+      point.lat = 22.5
+      point.lng = 45
       result.should be_true
     end
 
     it 'excludes points north of the border' do
-      point.set_coords(-1, 45)
+      point.lat = -1
+      point.lng = 45
       result.should be_false
     end
 
     it 'excludes points south of the border' do
-      point.set_coords(48, 45)
+      point.lat = 48
+      point.lng = 45
       result.should be_false
     end
 
     it 'excludes points west of the border' do
-      point.set_coords(22.5, -1)
+      point.lat = 22.5
+      point.lng = -1
       result.should be_false
     end
 
     it 'excludes points east of the border' do
-      point.set_coords(22.5, 91)
+      point.lat = 22.5
+      point.lng = 91
       result.should be_false
     end
 

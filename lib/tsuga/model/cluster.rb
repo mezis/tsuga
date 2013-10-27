@@ -76,7 +76,8 @@ module Tsuga::Model
       self.sum_lng += other.sum_lng
       self.ssq_lat += other.ssq_lat
       self.ssq_lng += other.ssq_lng
-      set_coords(sum_lat/weight, sum_lng/weight)
+      self.lat      = sum_lat/weight
+      self.lng      = sum_lng/weight
       self.children_ids += other.children_ids
 
       # dirty calculated values

@@ -27,7 +27,7 @@ shared_examples_for 'an adapter suitable for clustering' do
       sum_lat = 0
       sum_lng = 0
       records.each { |r| sum_lat += r.lat ; sum_lng += r.lng }
-      Tsuga::Model::Point.new.set_coords(sum_lat/count, sum_lng/count)
+      Tsuga::Model::Point.new(lat: sum_lat/count, lng: sum_lng/count)
     end
 
     it 'toplevel cluster has correct weight' do

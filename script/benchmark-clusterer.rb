@@ -58,7 +58,7 @@ end
 puts 'creating records...'
 Records.delete_all
 data.each_pair do |k,v|
-  Records.new.set_coords(v[:lat], v[:lng]).persist!
+  Records.new(lat: v[:lat], lng: v[:lng]).persist!
 end
 puts " #{Records.count} records created"
 

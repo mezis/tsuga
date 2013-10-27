@@ -8,7 +8,8 @@ describe Tsuga::Service::Aggregator do
   def new_cluster(depth, lat, lng)
     adapter.new.tap do |cluster|
       cluster.depth = depth
-      cluster.set_coords(lat,lng)
+      cluster.lat     = lat
+      cluster.lng     = lng
       cluster.weight  = 1
       cluster.sum_lat = lat
       cluster.sum_lng = lng

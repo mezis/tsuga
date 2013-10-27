@@ -9,9 +9,9 @@ describe Tsuga::Model::Point do
   # subject { TestPoint.new }
 
   describe '#distance_to' do
-    let(:p00) { described_class.new.set_coords(0,0) }
-    let(:p01) { described_class.new.set_coords(0,1) }
-    let(:p11) { described_class.new.set_coords(1,1) }
+    let(:p00) { described_class.new(lat:0, lng:0) }
+    let(:p01) { described_class.new(lat:0, lng:1) }
+    let(:p11) { described_class.new(lat:1, lng:1) }
 
     it 'is zero for the same point' do
       p00.distance_to(p00).should be_within(1e-6).of(0)
@@ -26,30 +26,39 @@ describe Tsuga::Model::Point do
     end
   end
 
-  describe '#set_coords' do
+  describe '#lat=, #lng=' do
     let(:result) { "%064b" % subject.geohash }
 
     it 'converts latitude and longitude to a geohash' do
-      subject.set_coords -90, -180
+      subject.lat =  -90
+      subject.lng = -180
       result.should == '0000000000000000000000000000000000000000000000000000000000000000'
     end
 
     it 'is ok for the highest hash' do
-      subject.set_coords 90 - 1e-8, 180 - 1e-8
+      subject.lat = 90 - 1e-8
+      subject.lng = 180 - 1e-8
       result.should == '1111111111111111111111111111111111111111111111111111111111111111'
     end
 
     it 'is ok or equator/greenwhich' do
-      subject.set_coords 0, 0
+      subject.lat = 0
+      subject.lng = 0
       result.should == '1100000000000000000000000000000000000000000000000000000000000000'
     end
 
     it 'fails when lat/lng missing' do
-      expect { subject.set_coords nil, 0 }.to raise_error(ArgumentError)
+      subject.lat = nil
+      subject.lng = 0
+      subject.geohash.should be_nil
     end
 
-    it 'fails when out of bounds' do
-      expect { subject.set_coords 90, 180 }.to raise_error(ArgumentError)
+    it 'fails when lat out of bounds' do
+      expect { subject.lat = 90 }.to raise_error(ArgumentError)
+    end
+
+    it 'fails when lng out of bounds' do
+      expect { subject.lng = 180 }.to raise_error(ArgumentError)
     end
   end
 
@@ -69,23 +78,23 @@ describe Tsuga::Model::Point do
 
   describe '(comparison)' do
     it 'preserves lat-order' do
-      described_class.new.set_coords(45, 2).geohash.should <
-      described_class.new.set_coords(46, 2).geohash
+      described_class.new(lat:45, lng:2).geohash.should <
+      described_class.new(lat:46, lng:2).geohash
     end
 
     it 'preserves lng-order' do
-      described_class.new.set_coords(45, 2).geohash.should <
-      described_class.new.set_coords(45, 3).geohash
+      described_class.new(lat:45, lng:2).geohash.should <
+      described_class.new(lat:45, lng:3).geohash
     end
 
     it 'preserves order around greenwich' do
-      described_class.new.set_coords(45, -1).geohash.should <
-      described_class.new.set_coords(45,  1).geohash
+      described_class.new(lat:45, lng:-1).geohash.should <
+      described_class.new(lat:45, lng: 1).geohash
     end
 
     it 'preserves order around equator' do
-      described_class.new.set_coords(-1, 2).geohash.should <
-      described_class.new.set_coords( 1, 2).geohash
+      described_class.new(lat:-1, lng:2).geohash.should <
+      described_class.new(lat: 1, lng:2).geohash
     end
   end
 end

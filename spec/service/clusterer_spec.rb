@@ -69,7 +69,7 @@ describe Tsuga::Service::Clusterer do
         sum_lat = 0
         sum_lng = 0
         records.find_each { |r| sum_lat += r.lat ; sum_lng += r.lng }
-        Tsuga::Model::Point.new.set_coords(0.1 * sum_lat, 0.1 * sum_lng)
+        Tsuga::Model::Point.new(lat: 0.1 * sum_lat, lng: 0.1 * sum_lng)
       end
 
       it 'toplevel cluster has correct weight' do
