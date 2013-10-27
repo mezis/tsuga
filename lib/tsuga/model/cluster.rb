@@ -87,6 +87,10 @@ module Tsuga::Model
     module ClassMethods
       # Cluster factory.
       # +other+ is either a Cluster or a Record
+      # 
+      # FIXME: there's a potential for overflow here on large datasets on the sum-
+      # and sum-of-squares fields. it can be mitigated by using double-precision
+      # fields, or calculating sums only on the children (instead of the subtree)
       def build_from(depth, other)
         c = new()
         c.depth = depth
@@ -107,8 +111,8 @@ module Tsuga::Model
           c.weight      = 1
           c.sum_lng     = other.lng
           c.sum_lat     = other.lat
-          c.ssq_lng     = other.lng * other.lng
-          c.ssq_lat     = other.lat * other.lat
+          c.ssq_lng     = other.lng ** 2
+          c.ssq_lat     = other.lat ** 2
         end
 
         c.geohash # force geohash calculation
