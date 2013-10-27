@@ -1,5 +1,6 @@
 require 'tsuga/model/cluster'
 require 'tsuga/adapter/memory/base'
+require 'tsuga/adapter/shared/cluster'
 
 module Tsuga::Adapter::Memory
   module Cluster
@@ -14,6 +15,7 @@ module Tsuga::Adapter::Memory
       by.send :include, Fields
       by.send :include, Base
       by.send :include, Tsuga::Model::Cluster
+      by.send :include, Tsuga::Adapter::Shared::Cluster
       by.extend ClassMethods
     end
 

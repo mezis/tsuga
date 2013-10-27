@@ -1,6 +1,7 @@
 require 'tsuga/model/tile'
 require 'tsuga/model/cluster'
 require 'tsuga/adapter/mongoid/base'
+require 'tsuga/adapter/shared/cluster'
 require 'mongoid'
 
 module Tsuga::Adapter::Mongoid
@@ -8,6 +9,7 @@ module Tsuga::Adapter::Mongoid
     def self.included(by)
       by.send :include, Base
       by.send :include, Tsuga::Model::Cluster
+      by.send :include, Tsuga::Adapter::Shared::Cluster
       by.extend ScopeMethods
     end
 

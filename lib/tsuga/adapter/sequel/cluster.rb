@@ -1,12 +1,14 @@
 require 'tsuga/model/cluster'
 require 'tsuga/model/tile'
 require 'tsuga/adapter/sequel/base'
+require 'tsuga/adapter/shared/cluster'
 
 module Tsuga::Adapter::Sequel
   module Cluster
     def self.included(by)
       by.send :include, Base
       by.send :include, Tsuga::Model::Cluster
+      by.send :include, Tsuga::Adapter::Shared::Cluster
       by.dataset_module Scopes
     end
 
