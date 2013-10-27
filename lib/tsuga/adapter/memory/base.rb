@@ -14,12 +14,18 @@ module Tsuga::Adapter::Memory
 
 
     def initialize(*args)
+      @new_record = false
       super(*args)
     end
 
 
+    def new_record?
+      @new_record
+    end
+
     def persist!
       @id ||= self.class.generate_id
+      @new_record = false
       self.class._records[id] = self.clone
       self
     end
@@ -33,6 +39,10 @@ module Tsuga::Adapter::Memory
 
     module ClassMethods
       def mass_create(records)
+        records.each(&:persist!)
+      end
+
+      def mass_update(records)
         records.each(&:persist!)
       end
 
@@ -107,6 +117,12 @@ module Tsuga::Adapter::Memory
             next unless _matches?(record)
             result << record.id
           end
+        end
+      end
+
+      def to_a
+        Array.new.tap do |ary|
+          find_each { |record| ary << record }
         end
       end
 

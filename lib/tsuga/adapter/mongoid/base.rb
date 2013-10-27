@@ -42,6 +42,10 @@ module Tsuga::Adapter::Mongoid
         collection.insert(new_records.map(&:attributes))
       end
 
+      def mass_update(records)
+        records.map(&:persist!)
+      end
+
       def find_by_id(id)
         find(id)
       end

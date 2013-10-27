@@ -56,6 +56,12 @@ module Tsuga::Adapter::ActiveRecord
         connection.insert_sql(full_sql)
       end
 
+      def mass_update(records)
+        transaction do
+          records.each(&:save!)
+        end
+      end
+
       def collect_ids
         pluck(:id)
       end

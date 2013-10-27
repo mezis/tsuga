@@ -17,9 +17,19 @@ module Tsuga::Adapter::Sequel
       save
     end
 
+    def new_record?
+      new?
+    end
+
     module DatasetMethods
       def mass_create(new_records)
         multi_insert(new_records.map(&:to_hash))
+      end
+
+      def mass_update(records)
+        db.transaction do
+          records.each(&:save)
+        end
       end
 
       def find_by_id(id)
