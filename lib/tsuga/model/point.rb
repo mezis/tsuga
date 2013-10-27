@@ -83,7 +83,7 @@ module Tsuga::Model
     end
 
     def prefix(depth)
-      geohash >> (64 - 2*depth)
+      geohash.to_i >> (64 - 2*depth)
     end
 
     def get_tilecode(depth)
