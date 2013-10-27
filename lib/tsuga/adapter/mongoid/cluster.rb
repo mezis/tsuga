@@ -22,7 +22,8 @@ module Tsuga::Adapter::Mongoid
         # where(:geohash.gte => sw, :geohash.lte => ne)
         depths = tiles.map(&:depth).uniq
         raise ArgumentError, 'all tiles must be at same depth' if depths.length > 1
-        where(:depth => depths.first, :tilecode.in => tiles.map(&:code))
+        codes = tiles.map { |t| "%016x" % t.code }
+        where(:tilecode.in => codes)
       end
     end
   end

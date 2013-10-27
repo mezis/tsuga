@@ -40,7 +40,7 @@ module Tsuga::Adapter::ActiveRecord
         depths = tiles.map(&:depth).uniq
         raise ArgumentError, 'all tile must be at same depth' if depths.length > 1
         codes = tiles.map { |t| "%016x" % t.code }
-        where(depth: depths.first, tilecode: codes)
+        where(tilecode: codes)
       end
 
       def in_viewport(sw:nil, ne:nil, depth:nil)
