@@ -45,10 +45,10 @@ module Tsuga::Adapter::Sequel
           Integer     :parent_id
           String      :children_type
           String      :children_ids # FIXME
-          Float       :sum_lat
-          Float       :sum_lng
-          Float       :ssq_lat
-          Float       :ssq_lng
+          Double      :sum_lat
+          Double      :sum_lng
+          Double      :ssq_lat
+          Double      :ssq_lng
           Integer     :weight
 
           index       :tilecode
