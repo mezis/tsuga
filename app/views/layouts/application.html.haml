@@ -8,5 +8,6 @@
 
     %meta{:content => "initial-scale=1.0, user-scalable=no", :name => "viewport"}/
     %script{:src => "https://maps.googleapis.com/maps/api/js?key=#{ENV['GOOGLE_MAPS_API_KEY']}&sensor=true&libraries=geometry", :type => "text/javascript"}
+    %script{:src => "http://google-maps-utility-library-v3.googlecode.com/svn/tags/infobox/1.1.9/src/infobox.js", :type => "text/javascript"}
   %body
     = yield

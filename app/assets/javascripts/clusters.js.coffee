@@ -6,42 +6,62 @@ class TsugaCluster
   constructor: (cluster, @defaultRadius, @map) ->
     @circle = null
     @line   = null
+    @text   = null
 
     center    = new google.maps.LatLng(cluster.lat, cluster.lng)
     if cluster.weight == 1
-      fillColor = '#ff0000'
+      fillColor = '#ff00ff'
       radius    = @defaultRadius
     else
-      fillColor = '#ff00ff'
+      fillColor = '#ff0000'
       radius    = this._getRadius(center, cluster)
-      # radius    = @defaultRadius
     options =
-      # strokeColor:    null
       strokeOpacity:  0.0
-      # strokeWeight:   2
       fillColor:      fillColor
-      fillOpacity:    0.1
+      fillOpacity:    0.2
       center:         center
       radius:         radius
     @circle = new google.maps.Circle(options)
-    console.log "cluster #{cluster.id} radius #{radius}"
+    @circle.cluster = this
 
     parent = new google.maps.LatLng(cluster.parent.lat, cluster.parent.lng)
     @line = new google.maps.Polyline
       path:           [center, parent]
       geodesic:       true
       strokeColor:    fillColor,
-      strokeOpacity:  0.3
+      strokeOpacity:  0.2
       strokeWeight:   2
+
+    if cluster.weight > 1
+      textOptions =
+        content:        cluster.weight,
+        boxClass:       'cluster-info'
+        disableAutoPan: true,
+        pixelOffset:    new google.maps.Size(-45, -9),
+        position:       center,
+        closeBoxURL:    '',
+        isHidden:       false,
+        enableEventPropagation: true
+      @text = new InfoBox(textOptions)
+
+    google.maps.event.addListener @circle, 'click', this._onClickClosure
 
   show: ->
     @circle.setMap(@map)
     @line.setMap(@map)
+    @text.open(@map) if @text
   hide: ->
     @circle.setMap(null)
     @line.setMap(null)
+    @text.setMap(null) if @text
   update: (radius) ->
     null
+
+  _onClickClosure: (event) ->
+    this.cluster._onClick()
+  _onClick: () ->
+    @map.setCenter(@circle.getCenter())
+    @map.setZoom(@map.getZoom() + 1)
 
   _getRadius: (center, cluster) ->
     point = new google.maps.LatLng(cluster.lat + cluster.dlat, cluster.lng + cluster.dlng)
@@ -127,21 +147,16 @@ class TsugaDemo
     this._log "panned to n:#{rect.n}, w:#{rect.w}, s:#{rect.s}, e:#{rect.e}"
     clearTimeout(@timeout)
     @timeout = setTimeout =>
-      this._fetchClusters()
+      this._runUpdate()
     , 250
     $('#js-zoomlevel').text(@map.getZoom())
 
-  _fetchClusters: ->
+  _runUpdate: ->
     rect   = this._getViewport()
+    this._updateTiles(rect)
+    this._updateClusters(rect)
 
-    $.ajax
-      url:      $(@selector).data('points-path')
-      data:     rect
-      dataType: 'json'
-      success:  (data) =>
-        this._updateObjects data, @points, (item) =>
-          new TsugaPoint(item, @defaultRadius, @map)
-        $('#js-point-count').text(data.length)
+  _updateClusters: (rect) ->
     $.ajax
       url:      $(@selector).data('clusters-path')
       data:     rect
@@ -150,6 +165,22 @@ class TsugaDemo
         this._updateObjects data, @clusters, (item) =>
           new TsugaCluster(item, @defaultRadius, @map)
         $('#js-cluster-count').text(data.length)
+
+        pointsCount = this._totalWeight(data)
+        this._log("total weight: #{pointsCount}")
+        if pointsCount < 250
+          this._updatePoints(rect)
+        else
+          $('#js-point-count').text("#{pointsCount} (hidden)")
+          this._removePoints()
+
+  _totalWeight: (data) ->
+    weight = 0
+    for id, cluster of data
+      weight += cluster.weight
+    return weight
+
+  _updateTiles: (rect) ->
     $.ajax
       url:      $(@selector).data('tiles-path')
       data:     rect
@@ -158,11 +189,26 @@ class TsugaDemo
         this._updateTiles(data)
 
 
-  _updateObjects: (data, collection, factory, updater) ->
+  _updatePoints: (rect) ->
+    $.ajax
+      url:      $(@selector).data('points-path')
+      data:     rect
+      dataType: 'json'
+      success:  (data) =>
+        this._updateObjects data, @points, (item) =>
+          new TsugaPoint(item, @defaultRadius, @map)
+        $('#js-point-count').text(data.length)
+
+
+  _removePoints: ->
+    this._log("remove all points")
+    this._updateObjects [], @points
+
+
+  _updateObjects: (data, collection, factory) ->
     for id, object of collection
       object.dirty = true
     for item in data
-      this._log "new object: #{item.lat}, #{item.lng}"
       if old_object = collection[item.id]
         old_object.update(@defaultRadius) # fixme: pass an updater through dependency injection?
       else
@@ -196,9 +242,8 @@ class TsugaDemo
 
 
   _log: (msg) ->
-    # console.log msg
+    console.log msg
 
 
-
-
-window.TsugaDemo = TsugaDemo
+window.tsuga =  
+  Demo: TsugaDemo

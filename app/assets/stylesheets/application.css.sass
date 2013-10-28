@@ -14,6 +14,8 @@
  */
 @import application/variables
 @import bootstrap
+@import compass/css3/user-interface
+@import compass/css3/text-shadow
 
 // This needs to be between bootstrap and bootstrap-responsive
 body
@@ -32,3 +34,17 @@ html, body
   width:            100%
   height:           100%
   background-color: #aaa
+
+div.cluster-info
+  $height:      18px
+  $width:       90px
+
+  width:        $width
+  background:   transparent
+  border:       none
+  text-align:   center
+  line-height:  $height
+  font-size:    $height
+  color:        white
+  +user-select(none)
+  +text-shadow(black 0px 2px 2px, black 0px 2px 20px)
