@@ -1,10 +1,13 @@
 # Tsuga
 
-A hierarchical clusterer for geographical data (points of interest).
+A clusterer for geographical data (points of interest) that produces a tree
+of clusters, with depths matching zoomlevels on typical maps.
+
+Makes heavy use of [Geohash](http://en.wikipedia.org/wiki/Geohash)-like and
+[Morton codes](http://en.wikipedia.org/wiki/Morton_number_(number_theory)).
 
 Designed with Rails usage in mind, but usable without Rails or even without a database.
 
-**Work in progress**, stay tuned.
 
 # Installation
 
@@ -14,6 +17,13 @@ Add the `tsuga` gem to your `Gemfile`:
 
 
 # Usage
+
+Four steps are typically involved:
+
+1. Provide a source of points of interest to cluster
+2. Provide storage for clusters
+3. Run the clusterer
+4. Lookup clusters or a particlar map viewport
 
 
 ## Providing source points
@@ -41,7 +51,8 @@ Example with [ActiveRecord][active_record]. Create a migration:
     require 'tsuga/adapter/active_record/cluster_migration'
 
     class AddClusters < ActiveRecord::Migration
-      include Tsuga::Adapter::ActiveRecord::ClusterMigration
+      include Tsuga::Adapter::ActiveRecord::Migration
+      self.clusters_table_name = :clusters
     end
 
 And the matching `Cluster` model:
@@ -77,6 +88,9 @@ Example with [Sequel][sequel].
       include Tsuga::Adapter::Sequel::ClusterModel
     end
 
+You will have to provide your own migration, respecting the schema in
+`Tsuga::Adapter::ActiveRecord::Migration`.
+
 
 ## Running the clusterer service
 
@@ -111,11 +125,11 @@ Clusters have at least the following accessors:
 | `lat`       | latitude of the cluster's barycenter   |
 | `lng`       | longitude of the cluster's barycenter  |
 | `weight`    | total number of points (leaves) in subtree |
-| `children`  | enumerable of child clusters |
+| `children`  | enumerable of child clusters (or points of interest) |
 | `depth`     | the scale this cluster is relevant at, where 0 is the whole world |
 
 
-[mongoid]:       http://foo.com
-[sequel]:        http://foo.com
-[active_record]: http://foo.com
+[mongoid]:       http://mongoid.org/
+[sequel]:        http://sequel.rubyforge.org/
+[active_record]: http://guides.rubyonrails.org/
 
