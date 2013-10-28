@@ -32,12 +32,12 @@ module Tsuga::Model
 
     # latitude deviation in cluster
     def dlat
-      @_dlat ||= Math.sqrt(ssq_lat/weight - (sum_lat/weight)**2)
+      @_dlat ||= _safe_sqrt(ssq_lat/weight - (sum_lat/weight)**2)
     end
 
     # longitude deviation in cluster
     def dlng
-      @_dlng ||= Math.sqrt(ssq_lng/weight - (sum_lng/weight)**2)
+      @_dlng ||= _safe_sqrt(ssq_lng/weight - (sum_lng/weight)**2)
     end
 
     # radius of cluster
@@ -129,6 +129,11 @@ module Tsuga::Model
   
 
     private
+
+
+    def _safe_sqrt(value)
+      (value < 0) ? 0 : Math.sqrt(value)
+    end
 
 
     def _update_tilecode
