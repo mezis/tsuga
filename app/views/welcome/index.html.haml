@@ -1,10 +1,26 @@
 %nav.navbar.navbar-default.navbar-fixed-top{ role:'navigation'}
   .navbar-header
     = link_to root_path, class:'navbar-brand' do
-      Tsuga
+      %span.text-primary
+        Tsuga
+      %span.text-muted
+        a clusterer for maps
+  %ul.nav.navbar-nav.navbar-right
+    %li
+      %a
+        Zoom:
+        %span#js-zoomlevel
+    %li
+      %a
+        %span#js-cluster-count ?
+        clusters
+    %li
+      %a
+        %span#js-point-count ?
+        points
 
 #map-container
-  #map-canvas{ data: { 'clusters-path' => clusters_path } }
+  #map-canvas{ data: { 'clusters-path' => clusters_path, 'tiles-path' => tiles_path, 'points-path' => points_path } }
 
 .container
 

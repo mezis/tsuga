@@ -1,18 +1,37 @@
 %h1 Listing clusters
 
-%table
+
+%table{ cellpadding: 5 }
   %tr
+    %th index
+    %th ID
     %th Lat
     %th Lng
     %th Geohash
     %th Depth
     %th Weight
+    %th Radius
+    %th Children IDs
+    %th Parent ID
+    %th Parent lat
+    %th Parent lng
 
-  - @clusters.each do |cluster|
+  - @clusters.each_with_index do |cluster, index|
     %tr
-      %td= cluster.lat
-      %td= cluster.lng
-      %td= cluster.geohash
+      %td= index
+      %td= cluster.id
+      %td= "%.4f" % cluster.lat
+      %td= "%.4f" % cluster.lng
+      %td= cluster.geohash.to_s(16)
       %td= cluster.depth
       %td= cluster.weight
+      %td= cluster.radius
+      %td= cluster.children_ids.join(', ')
+      %td= cluster.parent_id
+      - if cluster.parent.present?
+        %td= "%.4f" % cluster.parent.lat
+        %td= "%.4f" % cluster.parent.lng
+      - else
+        %td/
+        %td/
 

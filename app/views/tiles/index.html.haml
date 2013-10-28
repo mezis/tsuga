@@ -1,0 +1,18 @@
+%h1 Listing tiles
+
+
+%table{ cellpadding: 5 }
+  %tr
+    %th index
+    %th N
+    %th S
+    %th E
+    %th W
+
+  - @tiles.each_with_index do |tile, index|
+    %tr
+      %td= index
+      %td= "%.4f" % tile.northeast.lat
+      %td= "%.4f" % tile.southwest.lat
+      %td= "%.4f" % tile.northeast.lng
+      %td= "%.4f" % tile.southwest.lng

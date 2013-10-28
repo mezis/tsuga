@@ -8,8 +8,12 @@ class ClustersController < ApplicationController
     sw = Tsuga::Point(lat: params['s'].to_f, lng: params['w'].to_f)
     ne = Tsuga::Point(lat: params['n'].to_f, lng: params['e'].to_f)
 
+    depth = params['z'].to_i - 1
+
     # find clusters
-    @clusters = Cluster.in_viewport(sw: sw, ne: ne, depth: params['z'].to_i)
+    @clusters = Cluster
+      .in_viewport(sw: sw, ne: ne, depth: depth)
+      .includes(:parent)
   end
 
 end

@@ -1,0 +1,16 @@
+%h1 Listing points
+
+
+%table{ cellpadding: 5 }
+  %tr
+    %th index
+    %th ID
+    %th Lat
+    %th Lng
+
+  - @points.each_with_index do |point, index|
+    %tr
+      %td= index
+      %td= point.id
+      %td= "%.4f" % point.lat
+      %td= "%.4f" % point.lng

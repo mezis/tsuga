@@ -1,14 +1,16 @@
 GIT
+  remote: https://github.com/mezis/tsuga.git
+  revision: 8b4f3e047c5fa3921e8a7fa898939a26301a5af2
+  specs:
+    tsuga (0.0.1)
+      ruby-progressbar
+
+GIT
   remote: https://github.com/thomas-mcdonald/bootstrap-sass.git
   revision: 6cc04bda62ed7ccf71d445fa82e706cb696b4fdb
   specs:
     bootstrap-sass (3.0.0.0)
       sass (~> 3.2)
-
-PATH
-  remote: ../tsuga
-  specs:
-    tsuga (0.0.1)
 
 GEM
   remote: http://yarp.dev/
@@ -115,6 +117,7 @@ GEM
     minitest (4.7.5)
     multi_json (1.8.2)
     multipart-post (1.2.0)
+    mysql2 (0.3.13)
     pg (0.17.0)
     polyglot (0.3.3)
     pry (0.9.12.2)
@@ -170,6 +173,7 @@ GEM
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
       rspec-mocks (~> 2.14.0)
+    ruby-progressbar (1.2.0)
     sass (3.2.12)
     sass-rails (4.0.1)
       railties (>= 4.0.0, < 5.0)
@@ -231,6 +235,7 @@ DEPENDENCIES
   haml-rails
   jbuilder (~> 1.2)
   jquery-rails
+  mysql2
   pg
   pry-rails
   rails (~> 4.0.0)

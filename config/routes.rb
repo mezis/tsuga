@@ -1,5 +1,7 @@
 TsugaDemo::Application.routes.draw do
   resources :clusters, only:[:index]
+  resources :tiles,    only:[:index]
+  resources :points,   only:[:index]
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
