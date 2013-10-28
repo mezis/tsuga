@@ -29,15 +29,10 @@ gem 'uglifier', '>= 1.3.0'
 gem 'coffee-rails', '~> 4.0.0'
 
 # styling
-gem 'compass-rails'
-gem 'bootstrap-sass', git: 'https://github.com/thomas-mcdonald/bootstrap-sass.git'
+gem 'compass-rails', '~> 2.0.alpha.0'
+gem 'bootstrap-sass', '~> 3.0.0.0.rc'
 gem "font-awesome-rails"
 
-# maps
-gem 'gmaps4rails'
-
-# See https://github.com/sstephenson/execjs#readme for more supported runtimes
-# gem 'therubyracer', platforms: :ruby
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
@@ -62,12 +57,6 @@ gem 'sentry-raven'
 
 # makes the app (more) 12-factor compliant
 gem 'rails_12factor', group: :production
-
-
-group :doc do
-  # bundle exec rake doc:rails generates the API under doc/api.
-  gem 'sdoc', require: false
-end
 
 
 group :development do
