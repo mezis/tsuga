@@ -1,6 +1,10 @@
 language: ruby
 rvm:
-- 2.0.0
-- 1.9.3
+  - 2.0.0
+  - 1.9.3
 script:
-- bundle exec rspec spec
+  - bundle exec rspec spec
+branches:
+  only:
+    - master
+
