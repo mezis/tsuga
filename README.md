@@ -8,6 +8,8 @@ Makes heavy use of [Geohash](http://en.wikipedia.org/wiki/Geohash)-like and
 
 Designed with Rails usage in mind, but usable without Rails or even without a database.
 
+[![Build Status](https://travis-ci.org/mezis/tsuga.png?branch=master)](https://travis-ci.org/mezis/tsuga)
+
 
 # Installation
 
