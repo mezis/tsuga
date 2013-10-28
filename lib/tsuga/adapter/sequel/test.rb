@@ -27,7 +27,7 @@ module Tsuga::Adapter::Sequel
         _db.drop_table?(:test_records)
         _db.create_table(:test_records) do
           primary_key :id
-          BigDecimal  :geohash, size:21
+          String      :geohash, size:32
           Float       :lat
           Float       :lng
 
@@ -38,8 +38,8 @@ module Tsuga::Adapter::Sequel
         _db.create_table(:test_clusters) do
           primary_key :id
           Integer     :depth
-          BigDecimal  :geohash,  size:21
-          BigDecimal  :tilecode, size:21
+          String      :geohash,  size:32
+          String      :tilecode, size:32
           Float       :lat
           Float       :lng
           Integer     :parent_id

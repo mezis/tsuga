@@ -7,7 +7,7 @@ describe Tsuga::Model::Tile do
 
   describe '.including' do
     let(:depth)  { OpenStruct.new :value => 1 }
-    let(:point)  { Tsuga::Model::Point.new }
+    let(:point)  { Tsuga::Model::Point.new(lat:0, lng:0) }
     let(:result) { described_class.including(point, :depth => depth.value) }
 
     it 'creates a tile from a point' do
@@ -93,7 +93,24 @@ describe Tsuga::Model::Tile do
       point.lng = 91
       result.should be_false
     end
+  end
 
+  describe '#neighbour' do
+    subject { described_class.new(prefix:'300') }
+    # . . . . . . . .   13
+    # . . . . . . . .   02
+    # . . . . - . . .
+    # . . . - X - . .
+    # . . . . - . . .
+    # . . . . . . . .
+    # . . . . . . . .
+    # . . . . . . . .
+
+
+    it('works to the east' ) { subject.neighbour(lat: 0, lng: 1).prefix.should == '302' }
+    it('works to the west' ) { subject.neighbour(lat: 0, lng:-1).prefix.should == '122' }
+    it('works to the north') { subject.neighbour(lat: 1, lng: 0).prefix.should == '301' }
+    it('works to the south') { subject.neighbour(lat:-1, lng: 0).prefix.should == '211' }
   end
 
 end

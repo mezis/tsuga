@@ -2,12 +2,6 @@ require 'spec_helper'
 require 'tsuga/model/point'
 
 describe Tsuga::Model::Point do
-  # class TestPoint < Struct.new(:lat, :lng, :geohash)
-  #   include Tsuga::Model::Point
-  # end
-
-  # subject { TestPoint.new }
-
   describe '#distance_to' do
     let(:p00) { described_class.new(lat:0, lng:0) }
     let(:p01) { described_class.new(lat:0, lng:1) }
@@ -27,30 +21,30 @@ describe Tsuga::Model::Point do
   end
 
   describe '#lat=, #lng=' do
-    let(:result) { "%064b" % subject.geohash }
+    let(:result) { subject.geohash }
 
     it 'converts latitude and longitude to a geohash' do
       subject.lat =  -90
       subject.lng = -180
-      result.should == '0000000000000000000000000000000000000000000000000000000000000000'
+      result.should == '00000000000000000000000000000000'
     end
 
     it 'is ok for the highest hash' do
       subject.lat = 90 - 1e-8
       subject.lng = 180 - 1e-8
-      result.should == '1111111111111111111111111111111111111111111111111111111111111111'
+      result.should == '33333333333333333333333333333333'
     end
 
     it 'is ok or equator/greenwhich' do
       subject.lat = 0
       subject.lng = 0
-      result.should == '1100000000000000000000000000000000000000000000000000000000000000'
+      result.should == '30000000000000000000000000000000'
     end
 
     it 'fails when lat/lng missing' do
       subject.lat = nil
       subject.lng = 0
-      subject.geohash.should be_nil
+      result.should be_nil
     end
 
     it 'fails when lat out of bounds' do
@@ -64,15 +58,22 @@ describe Tsuga::Model::Point do
 
   describe '#lat #lng' do
     it 'computes coordinates from hash' do
-      subject.geohash = 0b1010101010101010101010101010101010101010101010101010101010101010
+      subject.geohash = '22222222222222222222222222222222'
       subject.lat.should be_within(1e-6).of(-90)
       subject.lng.should be_within(1e-6).of(180)
     end
 
     it 'is ok or equator/greenwhich' do
-      subject.geohash = 0b1100000000000000000000000000000000000000000000000000000000000000
+      subject.geohash = '30000000000000000000000000000000'
       subject.lat.should be_within(1e-6).of(0)
       subject.lng.should be_within(1e-6).of(0)
+    end
+  end
+
+  describe '#prefix' do
+    it 'returns a prefix of the geohash' do
+      subject.geohash = '12332100000000000000000000000000'
+      subject.prefix(6).should == '123321'
     end
   end
 

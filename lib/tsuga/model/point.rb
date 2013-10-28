@@ -54,20 +54,16 @@ module Tsuga::Model
 
 
     def inspect
-      "<%s lat:%s lng:%s geohash:0x%s>" % [
+      "<%s lat:%s lng:%s geohash:%s>" % [
         (self.class.name || 'Point').gsub(/.*::/, ''),
         lat ? ("%.3f" % lat) : 'nil',
         lng ? ("%.3f" % lng) : 'nil',
-        geohash ? ("%016x" % geohash) : 'nil'
+        geohash ? geohash : 'nil'
       ]
     end
 
     def prefix(depth)
-      geohash.to_i >> (64 - 2*depth)
-    end
-
-    def get_tilecode(depth)
-      (depth << 58) | prefix(depth)
+      geohash[0...depth]
     end
 
     private
@@ -91,6 +87,19 @@ module Tsuga::Model
     end
 
 
+    def _validate_geohash(value)
+      raise ArgumentError, 'bad geohash' unless /^[0-3]{32}$/ =~ value
+    end
+
+
+    def _geohash_to_int(value)
+      value.to_i(4)
+    end
+
+    def _int_to_geohash(value)
+      value.to_s(4).rjust(32,'0')
+    end
+
     # Convert the geohash into lat/lng
     def _set_latlng_from_geohash
       geohash = self.geohash
@@ -98,9 +107,10 @@ module Tsuga::Model
         self.lat = self.lng = nil
         return
       end
-      raise ArgumentError, 'bad hash' unless (0 ... (1<<64)).include?(geohash)
+      _validate_geohash(geohash)
 
-      lat,lng = _deinterleave_bits(geohash)
+      geohash_i = _geohash_to_int(geohash)
+      lat,lng = _deinterleave_bits(geohash_i)
       lat = lat * 180.0 / (1<<32) -  90.0
       lng = lng * 360.0 / (1<<32) - 180.0
       self.lat = lat
@@ -121,7 +131,8 @@ module Tsuga::Model
       normalized_lat = ((lat +  90.0) * (1<<32) / 180.0).to_i
       normalized_lng = ((lng + 180.0) * (1<<32) / 360.0).to_i
 
-      self.geohash = _interleave_bits(normalized_lat, normalized_lng)
+      geohash_i = _interleave_bits(normalized_lat, normalized_lng)
+      self.geohash = _int_to_geohash(geohash_i)
       return
     end
 

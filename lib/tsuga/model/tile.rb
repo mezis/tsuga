@@ -4,16 +4,27 @@ require 'tsuga/model/point'
 module Tsuga::Model
   class Tile
     # corner points
-    attr_accessor :southwest, :northeast
+    attr_reader :southwest, :northeast
 
     # level in the tile tree, also number of relevant high bits
     # in the geohash.
-    attr_accessor :depth
+    attr_reader :depth
+
+    # geohash prefix
+    attr_reader :prefix
 
     WIGGLE_FACTOR = 1e-4
 
+    def initialize(prefix:nil)
+      raise ArgumentError, 'bad prefix' if prefix !~ /^[0-3]{1,32}$/
+      @prefix    = prefix
+      @depth     = prefix.length
+      @southwest = Point.new(geohash: prefix.ljust(32, '0'))
+      @northeast = Point.new(geohash: prefix.ljust(32, '3'))
+    end
+
     def contains?(point)
-      point.prefix(depth) == southwest.prefix(depth)
+      point.geohash.start_with?(@prefix)
     end
 
     def dlat(count = 1)
@@ -24,19 +35,10 @@ module Tsuga::Model
       (northeast.lng - southwest.lng) * (count + WIGGLE_FACTOR)
     end
 
-    def code
-      @_code ||= southwest.get_tilecode(depth)
-    end
-
     # return the 4 children of this tile
     def children
-      geohash = southwest.geohash
-      new_depth = depth + 1
-      [0b00, 0b01, 0b10, 0b11].map { |quadrant|
-        geohash | (quadrant << (64 - new_depth * 2))
-      }.map { |hash|
-        # TODO: this cound be more efficiently written using a depth/southwest constructor
-        self.class.including(Point.new(geohash: hash), depth: new_depth)
+      %w(0 1 2 3).map { |quadrant|
+        self.class.new(prefix: @prefix + quadrant)
       }
     end
 
@@ -61,6 +63,13 @@ module Tsuga::Model
       end.compact
     end
 
+    def inspect
+      "<%s depth:%d prefix:%s>" % [
+        (self.class.name || 'Tile'),
+        depth, prefix
+      ]
+    end
+
     module ClassMethods
       # Returns a Tile instance.
       # +point+ should respond to +geohash+.
@@ -70,18 +79,7 @@ module Tsuga::Model
         depth = options[:depth]
         raise ArgumentError, 'bad depth' unless (0..31).include?(depth)
 
-        bits  = 2 * depth
-        lo_mask = ((1<<bits) - 1) << (64-bits) # mask for high bits
-        hi_mask = ((1<<(64-bits)) - 1)         # mask for low bits
-
-        new.tap do |t|
-          t.depth = depth
-          t.southwest = Point.new(geohash: point.geohash.to_i & lo_mask)
-          # TODO: calculating northeast can probably be done lazily
-          t.northeast = Point.new(geohash: point.geohash.to_i & lo_mask | hi_mask)
-          t.southwest.lat
-          t.northeast.lat
-        end
+        new(prefix: point.prefix(depth))
       end
 
       # Return an array of Tile instances that encloses both corner points

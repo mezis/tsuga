@@ -32,7 +32,7 @@ module Tsuga::Adapter::ActiveRecord
       def _prepare_tables
         _db.drop_table(:test_records) if _db.table_exists?(:test_records)
         _db.create_table(:test_records) do |t|
-          t.string   :geohash, limit:16
+          t.string   :geohash, limit:32
           t.float    :lat
           t.float    :lng
         end
@@ -41,8 +41,8 @@ module Tsuga::Adapter::ActiveRecord
         _db.drop_table(:test_clusters) if _db.table_exists?(:test_clusters)
         _db.create_table(:test_clusters) do |t|
           t.integer  :depth
-          t.string   :geohash,  limit:16
-          t.string   :tilecode, limit:16
+          t.string   :geohash,  limit:32
+          t.string   :tilecode, limit:32
           t.float    :lat
           t.float    :lng
           t.integer  :parent_id

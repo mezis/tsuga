@@ -25,7 +25,9 @@ module Tsuga::Model
     def initialize
       super
       self.depth   ||= 1
-      self.geohash ||= 0xC000000000000000 # equator/greenwich
+      # equator/greenwich
+      self.lat     ||= 0 
+      self.lng     ||= 0
     end
 
     # latitude deviation in cluster
@@ -54,8 +56,8 @@ module Tsuga::Model
       end
     end
 
-    def geohash=(*args)
-      super(*args)
+    def geohash=(value)
+      super(value)
       _update_tilecode
       geohash
     end
@@ -131,7 +133,7 @@ module Tsuga::Model
 
     def _update_tilecode
       if geohash && depth
-        self.tilecode = get_tilecode(depth)
+        self.tilecode = prefix(depth)
       else
         self.tilecode = nil
       end

@@ -66,10 +66,7 @@ module Tsuga::Service
           # they are _not_ the same as what we pass to the aggregator,
           # just those inside the fence
           fenced_cluster_ids = _adapter.in_tile(tile).collect_ids
-
-          if fenced_cluster_ids.empty?
-            require 'pry' ; require 'pry-nav' ; binding.pry
-          end          
+          raise RuntimeError, 'no cluster in fence' if fenced_cluster_ids.empty?
 
           Aggregator.new(clusters:clusters, ratio:PROXIMITY_RATIO, fence:tile).tap do |aggregator|
             aggregator.run

@@ -16,27 +16,6 @@ module Tsuga::Adapter::Mongoid
       @_id ||= super
     end
 
-    def geohash
-      value = super
-      value.kind_of?(String) ? value.to_i(16) : value
-    end
-
-    def geohash=(value)
-      value = '%016x' % value if value.kind_of?(Integer)
-      super(value)
-    end
-
-    def tilecode
-      value = super
-      value.kind_of?(String) ? value.to_i(16) : value
-    end
-
-    def tilecode=(value)
-      value = '%016x' % value if value.kind_of?(Integer)
-      super(value)
-    end
-
-
     module ScopeMethods
       def mass_create(new_records)
         collection.insert(new_records.map(&:attributes))
