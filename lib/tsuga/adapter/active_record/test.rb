@@ -1,6 +1,7 @@
 require 'tsuga/adapter/active_record/base'
 require 'tsuga/adapter/active_record/cluster'
 require 'tsuga/adapter/active_record/record'
+require 'tsuga/adapter/active_record/migration'
 require 'active_record'
 require 'sqlite3'
 require 'ostruct'
@@ -39,23 +40,7 @@ module Tsuga::Adapter::ActiveRecord
         _db.add_index :test_records, :geohash
 
         _db.drop_table(:test_clusters) if _db.table_exists?(:test_clusters)
-        _db.create_table(:test_clusters) do |t|
-          t.integer  :depth
-          t.string   :geohash,  limit:32
-          t.string   :tilecode, limit:32
-          t.float    :lat
-          t.float    :lng
-          t.integer  :parent_id
-          t.string   :children_type
-          t.string   :children_ids # FIXME
-          t.float    :sum_lat,  limit:53
-          t.float    :sum_lng,  limit:53
-          t.float    :ssq_lat,  limit:53
-          t.float    :ssq_lng,  limit:53
-          t.integer  :weight
-        end
-
-        _db.add_index :test_clusters, :tilecode
+        Migration.new.tap { |m| m.verbose = false ; m.up }
       end
 
       def _build_test_models
@@ -76,6 +61,11 @@ module Tsuga::Adapter::ActiveRecord
         end
 
         OpenStruct.new :clusters => cluster_model, :records => record_model
+      end
+
+      class Migration < ActiveRecord::Migration
+        include Tsuga::Adapter::ActiveRecord::Migration
+        self.clusters_table_name = :test_clusters
       end
     end
 
