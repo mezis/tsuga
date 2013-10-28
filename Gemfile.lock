@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/mezis/tsuga.git
-  revision: 8b4f3e047c5fa3921e8a7fa898939a26301a5af2
+  revision: 9dd36d2bdcf5de30d8a94ae3a5c1667b91cda283
   specs:
     tsuga (0.0.1)
       ruby-progressbar
