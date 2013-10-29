@@ -24,13 +24,14 @@ class TsugaCluster
     @circle = new google.maps.Circle(options)
     @circle.cluster = this
 
-    parent = new google.maps.LatLng(cluster.parent.lat, cluster.parent.lng)
-    @line = new google.maps.Polyline
-      path:           [center, parent]
-      geodesic:       true
-      strokeColor:    fillColor,
-      strokeOpacity:  0.2
-      strokeWeight:   2
+    if cluster.parent
+      parent = new google.maps.LatLng(cluster.parent.lat, cluster.parent.lng)
+      @line = new google.maps.Polyline
+        path:           [center, parent]
+        geodesic:       true
+        strokeColor:    fillColor,
+        strokeOpacity:  0.2
+        strokeWeight:   2
 
     if cluster.weight > 1
       textOptions =
@@ -48,11 +49,11 @@ class TsugaCluster
 
   show: ->
     @circle.setMap(@map)
-    @line.setMap(@map)
+    @line.setMap(@map) if @line
     @text.open(@map) if @text
   hide: ->
     @circle.setMap(null)
-    @line.setMap(null)
+    @line.setMap(null) if @line
     @text.setMap(null) if @text
   update: (radius) ->
     null
@@ -101,8 +102,8 @@ class TsugaTile
       path:           [nw, ne, se, sw, nw]
       geodesic:       true
       strokeColor:    '#ffff00',
-      strokeOpacity:  0.6
-      strokeWeight:   2
+      strokeOpacity:  0.2
+      strokeWeight:   3
 
   show: ->
     @poly.setMap(@map)
@@ -152,7 +153,7 @@ class TsugaDemo
     $('#js-zoomlevel').text(@map.getZoom())
 
   _runUpdate: ->
-    rect   = this._getViewport()
+    rect = this._getViewport()
     this._updateTiles(rect)
     this._updateClusters(rect)
 
@@ -174,19 +175,29 @@ class TsugaDemo
           $('#js-point-count').text("#{pointsCount} (hidden)")
           this._removePoints()
 
+
   _totalWeight: (data) ->
     weight = 0
     for id, cluster of data
       weight += cluster.weight
     return weight
 
+
   _updateTiles: (rect) ->
+    this._log "_updateTiles"
     $.ajax
       url:      $(@selector).data('tiles-path')
       data:     rect
       dataType: 'json'
       success:  (data) =>
-        this._updateTiles(data)
+        newTiles = []
+        for rect in data
+          newTiles.push new TsugaTile(rect, @map)
+        for tile in newTiles
+          tile.show()
+        for tile in @tiles
+          tile.hide()
+        @tiles = newTiles
 
 
   _updatePoints: (rect) ->
@@ -227,18 +238,6 @@ class TsugaDemo
       @bounds.getNorthEast(),
       @bounds.getSouthWest()
     ) * 0.01
-
-
-  _updateTiles: (data) ->
-    newTiles = []
-    for rect in data
-      this._log "new tile: #{rect.n}, #{rect.s}, #{rect.e}, #{rect.w}"
-      newTiles.push new TsugaTile(rect, @map)
-    for tile in newTiles
-      tile.show()
-    for tile in @tiles
-      tile.hide()
-    @tiles = newTiles
 
 
   _log: (msg) ->
