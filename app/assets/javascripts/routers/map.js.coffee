@@ -1,7 +1,8 @@
 tsuga.Routers.Map = Backbone.Router.extend
 
   routes: {
-    ':zoom/:lat/:lng': '_panMapAction'
+    ':zoom/:lat/:lng': '_panMapAction',
+    '*path':           '_panMapDefaultAction'
   }
 
   initialize: ->
@@ -20,6 +21,11 @@ tsuga.Routers.Map = Backbone.Router.extend
 
     @view.render()
     console.log 'tsuga.Routers.Map#initialize done'
+
+
+  _panMapDefaultAction: ->
+    console.log 'tsuga.Routers.Map#_panMapDefaultAction'
+    @map.set 'position', @map.defaults().position
 
 
   _panMapAction: (zoom, lat, lng) ->
