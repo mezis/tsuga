@@ -5,15 +5,13 @@ tsuga.Routers.Map = Backbone.Router.extend
   }
 
   initialize: ->
-    @map      = new tsuga.Models.Map()
-    @view     = new tsuga.Views.Map({ model: @map })
-    @clusters = new tsuga.Collections.Clusters()
-    @views    = {}
+    @map          = new tsuga.Models.Map()
+    @view         = new tsuga.Views.Map({ model: @map })
+    @clusters     = new tsuga.Collections.Clusters()
+    @clustersView = new tsuga.Views.Clusters({ parent: @view, clusters: @clusters })
 
     this.listenTo @map,      'change:position', this._updateNavigation
     this.listenTo @map,      'change:position', this._updateClusters
-    this.listenTo @clusters, 'add',             this._addCluster
-    this.listenTo @clusters, 'remove',          this._removeCluster
 
     this.listenToOnce @view, 'idle:viewport', =>
       console.log '*** first update'
@@ -53,20 +51,3 @@ tsuga.Routers.Map = Backbone.Router.extend
         s:   viewport.s
         e:   viewport.e
         w:   viewport.w
-
-
-  _addCluster: (cluster, collection) ->
-    # console.log '_addCluster'
-    view = new tsuga.Views.Cluster
-      cluster:  cluster
-      parent:   @view
-    view.render()
-    @views[cluster.id] = view
-
-
-  _removeCluster: (cluster, collection) ->
-    # console.log '_removeCluster'
-    view = @views[cluster.id]
-    return unless view
-    view.unrender()
-    delete @views[cluster.id]
