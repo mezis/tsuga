@@ -244,5 +244,3 @@ class TsugaDemo
     console.log msg
 
 
-window.tsuga =  
-  Demo: TsugaDemo
