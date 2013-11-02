@@ -15,17 +15,15 @@ tsuga.Views.Cluster = Backbone.Model.extend
     center = new google.maps.LatLng(cluster.lat, cluster.lng)
 
     if cluster.weight == 1
-      fillColor = '#ff00ff'
-      radius    = @defaultRadius
+      fillColor =     '#ff00ff'
     else
-      fillColor = '#ff0000'
-      radius    = this._getRadius(center, cluster)
+      fillColor =     '#ff0000'
     options =
       strokeOpacity:  0.0
       fillColor:      fillColor
       fillOpacity:    0.2
       center:         center
-      radius:         radius
+      radius:         this._getRadius(center, cluster)
     @circle = new google.maps.Circle(options)
 
     if cluster.parent.lat
@@ -71,7 +69,10 @@ tsuga.Views.Cluster = Backbone.Model.extend
 
 
   _getRadius: (center, cluster) ->
+    if cluster.weight == 1
+      return @parent.defaultRadius
+      
     point = new google.maps.LatLng(cluster.lat + cluster.dlat, cluster.lng + cluster.dlng)
     radius = google.maps.geometry.spherical.computeDistanceBetween(center, point)
-    Math.max(radius, @parent.defaultRadius)
+    return Math.max(radius, @parent.defaultRadius)
 
