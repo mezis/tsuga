@@ -1,35 +1,26 @@
-%nav.navbar.navbar-default.navbar-fixed-top{ role:'navigation'}
-  .navbar-header
+#tsuga
+  %nav.navbar.navbar-default.navbar-fixed-top{ role:'navigation' }
     = link_to root_path, class:'navbar-brand' do
       %span.text-primary
         Tsuga
       %span.text-muted
         a clusterer for maps
-  %ul.nav.navbar-nav.navbar-left
-    %li
+    %p.navbar-text.pull-right
       %a{ href: 'http://github.com/mezis/tsuga' }
         View on Github
-  %ul.navbar-right.nav.navbar-nav
-    %li
-      %a
-        Zoom:
-        %span#js-zoomlevel
-    %li
-      %a
-        %span#js-cluster-count ?
-        clusters
-    %li
-      %a
-        %span#js-point-count ?
-        points
 
-#map-container
-  #map-canvas{ data: { 'clusters-path' => clusters_path, 'tiles-path' => tiles_path, 'points-path' => points_path } }
+  %nav.navbar.navbar-default.navbar-fixed-bottom{ role:'navigation' }
+    %p.navbar-text.pull-left
+      Zoom:
+      %span#js-zoomlevel
 
-.container
+    %p.navbar-text.pull-right
+      %span#js-cluster-count ?
+      clusters
+    %p.navbar-text.pull-right
+      %span#js-point-count ?
+      points
 
-:coffee
-  $(document).ready ->
-    console.log "doc ready"
-    window.demo = new tsuga.Demo('#map-canvas')
-    demo.setup()
+
+  #map-container
+    #map-canvas{ data: { 'clusters-path' => clusters_path, 'tiles-path' => tiles_path, 'points-path' => points_path } }
