@@ -34,6 +34,11 @@ GEM
       tzinfo (~> 0.3.37)
     arel (4.0.1)
     atomic (1.1.14)
+    backbone-on-rails (1.1.0.0)
+      eco
+      ejs
+      jquery-rails
+      rails (>= 3.1)
     bootstrap-sass (3.0.0.0.rc2)
       sass (~> 3.2)
     builder (3.1.4)
@@ -59,6 +64,12 @@ GEM
     dotenv (0.9.0)
     dotenv-rails (0.9.0)
       dotenv (= 0.9.0)
+    eco (1.0.0)
+      coffee-script
+      eco-source
+      execjs
+    eco-source (1.1.0.rc.1)
+    ejs (1.1.1)
     erubis (2.7.0)
     eventmachine (1.0.3)
     execjs (2.0.2)
@@ -213,6 +224,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  backbone-on-rails
   bootstrap-sass (~> 3.0.0.0.rc)
   coffee-rails (~> 4.0.0)
   compass-rails (~> 2.0.alpha.0)
