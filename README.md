@@ -1,15 +1,23 @@
 # Tsuga
 
-A clusterer for geographical data (points of interest) that produces a tree
-of clusters, with depths matching zoomlevels on typical maps.
+[![Build Status](https://travis-ci.org/mezis/tsuga.png?branch=master)](https://travis-ci.org/mezis/tsuga)
+
+<img width="320" style="margin-left:1em;margin-bottom:1em;clear:both;float:right;" src="http://cl.ly/image/251X2b1p1B00/b1.jpg"/>
+<img width="320" style="margin-left:1em;margin-bottom:1em;clear:both;float:right;" src="http://cl.ly/image/1T1U421F1P2G/b2.jpg"/>
+
+A **clustering engine** for geographical data (points of interest) that
+produces a **tree** of clusters, with depths matching zoomlevels on typical
+maps, and source points of interest as leaves.
 
 Makes heavy use of [Geohash](http://en.wikipedia.org/wiki/Geohash)-like and
 [Morton codes](http://en.wikipedia.org/wiki/Morton_number_(number_theory)).
 
 Designed with Rails usage in mind, but usable without Rails or even without a database.
 
-[![Build Status](https://travis-ci.org/mezis/tsuga.png?branch=master)](https://travis-ci.org/mezis/tsuga)
-
+Go play with the [live demo](http://tsuga-demo.herokuapp.com/) from which
+the screenshots on the right were taken. Be patient, it's a free Heroku app!
+The [source](http://github.com/mezis/tsuga-demo) of the demo is an example
+of how to use Tsuga.
 
 # Installation
 
