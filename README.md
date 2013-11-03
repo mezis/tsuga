@@ -10,7 +10,7 @@ produces a **tree** of clusters, with depths matching zoomlevels on typical
 maps, and source points of interest as leaves.
 
 Makes heavy use of [Geohash](http://en.wikipedia.org/wiki/Geohash)-like and
-[Morton codes](http://en.wikipedia.org/wiki/Morton_number_(number_theory)).
+[Morton codes](http://en.wikipedia.org/wiki/Morton_number_%28number_theory%29).
 
 Designed with Rails usage in mind, but usable without Rails or even without a database.
 
