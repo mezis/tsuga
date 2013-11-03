@@ -19,6 +19,22 @@ the screenshots on the right were taken. Be patient, it's a free Heroku app!
 The [source](http://github.com/mezis/tsuga-demo) of the demo is an example
 of how to use Tsuga.
 
+### Why?
+
+Yes, Google Maps [does this](https://code.google.com/p/google-maps-utility-library-v3/wiki/Libraries#Marker_Clusterer_Plus)... for small datasets.
+
+- **Performance**. If you're handling thousands to millions of points of
+  interest, you cannot rely on client-side clustering anymore, if only because
+  sending the coordinates across would take minutes. <br/>
+  Tsuga gives you millisecond queries to find clusters to display, even when your
+  source dataset is huge.
+
+- **Structure**. Client-side solution cluster the markers you have. If you
+  want to let users drill down into data, you need to preserve a tree
+  structure: zooming in on a cluster should show what's "inside". <br/>
+  Tsuga builds a walkable tree of clusters.
+
+
 # Installation
 
 Add the `tsuga` gem to your `Gemfile`:
