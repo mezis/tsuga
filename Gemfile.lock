@@ -62,7 +62,7 @@ GEM
     lumberjack (1.0.4)
     method_source (0.8.2)
     mime-types (1.25.1)
-    mongoid (3.1.5)
+    mongoid (3.1.6)
       activemodel (~> 3.2)
       moped (~> 1.4)
       origin (~> 1.0)
