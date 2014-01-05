@@ -1,12 +1,16 @@
 language: ruby
 rvm:
   - 2.0.0
+install:
+  - ./rebund/run download
+  - bundle install --path vendor/bundle
+after_script:
+  - ./rebund/run upload
 script:
   - bundle exec rspec spec
-branches:
-  only:
-    - master
-
 services:
   - mongodb
+env:
+  global:
+    secure: YvFPG6vpyAvNJF6qKg4llu4mXUBfBalcsd1b2Xs7YPfNvEd1nunkZmueXmDLpAD3VFKHV1K3nWix1ZLL6K2+8alqfEPyH25ouUuH/tpm8t3G1MGsLtKodD55B36BK+zcdO9vcdHwquB6Qrxxac9WYC7jpFAPifeP5d6VNeZB5l0=
 
